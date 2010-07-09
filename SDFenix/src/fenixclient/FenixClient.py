@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# coding: utf-8
-# udpcli.py 20080524 AF
 
 import sys, socket
 
 class State(object):
     def __init__(self, acumul):
-	self.acumul = acumul
+        self.acumul = acumul
 
 class Message:
     def __init__(self, seqNum, msgType, clientID, data):
-	self.data
-	self.seqNum
-	self.msgType
-	self.clientID
+        self.data
+        self.seqNum
+        self.msgType
+        self.clientID
 
 if __name__ == '__main__':
     try:
@@ -30,7 +28,7 @@ if __name__ == '__main__':
     
     fd.sendto(buff, (addr, port))
     #for i in range(100):
-	#fd.sendto(str(i), (addr, port))    
+    #fd.sendto(str(i), (addr, port))    
     '''
     try:
 	portACK = 1906
