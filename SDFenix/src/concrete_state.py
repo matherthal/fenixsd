@@ -20,3 +20,11 @@ class ConcreteState(State):
         '''
         State.__init__(self,id)
         self.accumulated_value = 0
+        
+    def strToState(self, str):
+        state = State.strToState(self, str)
+        concreteState = ConcreteState(state.id)
+        concreteState.lastSequence = state.lastSequence
+        concreteState.accumulated_value = int(state.raw_data) #interpreta o raw_data
+        
+        return state

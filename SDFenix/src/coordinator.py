@@ -15,17 +15,13 @@ class Coordinator(object):
     _mode = None #indefinido inicialmentes
         
     def setActive(self):
-        _mode = self.ACTIVE
+        self._mode = self.ACTIVE
         
     def setPassive(self):
-        _mode = self.PASSIVE
+        self._mode = self.PASSIVE
         
     def heartbeat(self):
-        pass
+        raise NotImplementedError
     
-    def _messageToState(self, message):
-        pass
-    
-        
-        
-        
+    def processMessage(self, message):
+        raise NotImplementedError
