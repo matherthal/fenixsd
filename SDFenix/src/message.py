@@ -9,8 +9,13 @@ class Message(object):
     '''
     classdocs
     '''
+     #não entendi para que servem
     PEDIDO = 0
     RESPOSTA = 1
+    
+    #Tipos de mensagem
+    NORMAL_MESSAGE = 0 #a mensagem deve ser repassada para a aplicação
+    STATE_MESSAGE = 1  #a mensagem carrega um State em data
     
 
     def __init__(self, sender, receiver, sequence, type, data):
