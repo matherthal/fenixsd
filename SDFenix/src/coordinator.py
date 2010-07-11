@@ -5,7 +5,7 @@ Created on 11/07/2010
 @author: Rondon
 '''
 
-class Cordinator(object):
+class Coordinator(object):
     '''
     classdocs
     '''
