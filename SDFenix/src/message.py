@@ -9,7 +9,7 @@ class Message(object):
     '''
     classdocs
     '''
-     #não entendi para que servem
+    #não entendi para que servem
     PEDIDO = 0
     RESPOSTA = 1
     
