@@ -7,24 +7,18 @@ Created on 11/07/2010
 
 class Coordinator(object):
     '''
-    classdocs
+    Classe estática (não em constructor).
     '''
-    passive = 0
-    active = 1
-
+    PASSIVE = 0
+    ACTIVE = 1
     _stateList = ()
-    _mode = passive
-
-    def __init__(self):
-        '''
-        Constructor
-        '''
+    _mode = None #indefinido inicialmentes
         
     def setActive(self):
-        _mode = self.active
+        _mode = self.ACTIVE
         
     def setPassive(self):
-        _mode = self.passive
+        _mode = self.PASSIVE
         
     def heartbeat(self):
         pass
