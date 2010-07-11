@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#
+#
+#
+#    ESSA CLASSE VAI SAIR, SOH ESTA AQUI PARA USARMOS AS COISAS DELA!
+#
+#    JAH COPIEI AS COISAS DELA PARA O COORDINATOR
+#
+
+
 import sys, struct, socket
 #from copy import copy
 
