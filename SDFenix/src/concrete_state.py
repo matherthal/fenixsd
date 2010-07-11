@@ -8,12 +8,15 @@ from state import State
 
 class ConcreteState(State):
     '''
-    classdocs
+    Classe que implementa State, adicionando informações da aplicação. 
+    No nosso caso, para o servidor acumulador, precisamos guardar 
+    apenas accumulated_value.
     '''
     
 
-    def __init__(self):
+    def __init__(self, id):
         '''
         Constructor
         '''
+        State.__init__(self,id)
         self.accumulated_value = 0
