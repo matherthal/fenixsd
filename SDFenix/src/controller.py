@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 11/07/2010
 
 @author: Rondon
 '''
 
-class State(object):
+class Controller(object):
     '''
     classdocs
     '''
@@ -14,5 +15,4 @@ class State(object):
         '''
         Constructor
         '''
-        self.lastSequence = 0
-        self.id = ""
+        

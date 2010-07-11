@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 11/07/2010
 
 @author: Rondon
 '''
 
-class MyClass(object):
+class State(object):
     '''
     classdocs
     '''
 
 
-    def __init__(selfparams):
+    def __init__(self):
         '''
         Constructor
         '''
-        
+        self.lastSequence = 0
+        self.id = ""

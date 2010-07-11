@@ -1,4 +1,10 @@
-#Fri Jul 09 17:34:09 BRT 2010
+#Sun Jul 11 18:48:13 BRT 2010
 eclipse.preferences.version=1
+encoding//src/concrete_state.py=utf-8
+encoding//src/controller.py=utf-8
+encoding//src/cordinator.py=utf-8
 encoding//src/fenixclient/FenixClient.py=utf-8
 encoding//src/fenixserver/FenixServer.py=utf-8
+encoding//src/message.py=utf-8
+encoding//src/messenger.py=utf-8
+encoding//src/state.py=utf-8
