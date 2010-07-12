@@ -9,21 +9,25 @@ class Message(object):
     '''
     classdocs
     '''
-    #não entendi para que servem
-    PEDIDO = 0
-    RESPOSTA = 1
+    
+    REQUEST = 0
+    REPLY = 1
     
     #Tipos de mensagem
     NORMAL_MESSAGE = 0 #a mensagem deve ser repassada para a aplicação
     STATE_MESSAGE = 1  #a mensagem carrega um State em data
+    ACK_MESSAGE = 2 #mensagem de confirmação de recebimento de um State vindo do servidor Principal para o Secundário
     
 
-    def __init__(self, sender, receiver, sequence, type, data):
+    def __init__(self, sender, receiver, sequence, msg_type, data):
         '''
         Constructor
         '''
         self.sender = sender
         self.receiver = receiver
         self.sequence = sequence
-        self.type = type
+        self.msg_type = msg_type
         self.data = data
+        
+    def __str__(self):
+        return self.sender + ' ' + self.receiver + ' ' + self.sequence + ' ' + self.msg_type + ' ' + str(self.data)

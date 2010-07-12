@@ -20,5 +20,5 @@ class Message(object):
         self.sender = sender
         self.receiver = receiver
         self.sequence = sequence
-        self.type = message_type
+        self.msg_type = message_type
         self.data = data
