@@ -7,6 +7,7 @@ Created on 11/07/2010
 import sys, socket, struct
 
 from message import Message
+from state import State
 
 class Messenger(object):
     '''
@@ -43,14 +44,30 @@ class Messenger(object):
                       receiver=fields[2],sequence=fields[3], \
                       msg_type=fields[0], \
                       data=fields[4])
+        
+    def messageToString(self, message):
+        return str(message)
+    
+    def stringToState(self, string):
+        fields = string.split()
+        
+        """
+        Campos do state:
+        Message Data
+        """
+        
+        state = State()
+        state.message = self.stringToMessage(fields[0])
+        state.data = fields[1] 
     
     
     def send(self, destination, message):
-        """
-        Aqui não se deve enviar a mensagem diretamente, deve-se criar um objeto Message.
+        """        
         Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
         """
         
+        msg = self.stringToMessage(message)
+        raise NotImplementedError
         
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.sendto(message, (destination, self.port))

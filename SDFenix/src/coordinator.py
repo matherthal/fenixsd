@@ -16,7 +16,7 @@ class Coordinator(object):
     PASSIVE = 0
     ACTIVE = 1
     _stateList = []
-    _mode = None #indefinido inicialmentes
+    _mode = PASSIVE #indefinido inicialmentes
     id = None #id da máquina
     
         
@@ -33,8 +33,7 @@ class Coordinator(object):
         if message.msg_type == Message.STATE_MESSAGE:
             print 'Processando uma mensagem STATE'
             
-            
-            state = State
+            state = Messenger.stringToState(message.data)
 
             """
             Tem que ser uma mensagem vindo do ATIVO
@@ -63,16 +62,7 @@ class Coordinator(object):
         elif message.msg_type == Message.NORMAL_MESSAGE:
             print "Mensagem do tipo normal =)"
         elif message.msg_type == Message.ACK_MESSAGE:
-            print 'Processando uma mensagem ACK'
-            
-            """
-            A mensagem de ACK contém na parte de dados o número de sequencia
-            """
-            seq = int(message.data)
-            
-            """
-            Para o temporizador para aquela mensagem de State
-            """
+            print 'Processando uma mensagem ACK'          
             raise NotImplementedError
         else:    
             raise Exception("Tipo de mensagem desconhecido")
