@@ -24,7 +24,7 @@ class Messenger(object):
     com o Coordinator para poder obter a última sequencia recebida de um cliente. 
     '''
     port = 1905
-    multicast_group = None
+    multicast_group = '225.0.0.1'
     
     def _insertHeader(self, data):
         raise NotImplementedError
@@ -33,12 +33,11 @@ class Messenger(object):
         raise NotImplementedError
     
     def stringToMessage(self, string):
-        fields = string.split()
-        
         """
         Campos da mensagem:
         Type Sender Receiver Sequence Data
         """ 
+        fields = string.split() 
         
         return Message(sender=fields[1], \
                       receiver=fields[2],sequence=fields[3], \
@@ -49,25 +48,24 @@ class Messenger(object):
         return str(message)
     
     def stringToState(self, string):
-        fields = string.split()
-        
         """
         Campos do state:
         Message Data
         """
         
+        fields = string.split()
+        
         state = State()
         state.message = self.stringToMessage(fields[0])
-        state.data = fields[1] 
+        state.data = fields[1]        
     
-    
-    def send(self, destination, message):
+    def send(self, destination, message):       
+        msg = self.stringToMessage(message)
+        raise NotImplementedError
+        
         """        
         Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
         """
-        
-        msg = self.stringToMessage(message)
-        raise NotImplementedError
         
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.sendto(message, (destination, self.port))
@@ -87,5 +85,11 @@ class Messenger(object):
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         data, addr = fd.recvfrom(1024)
         
+        msg = self.stringToMessage(data)
         
+        """        
+        Aqui vai entrar o temporizador, e tratar o recebimento de mensagens.
+        """
+        
+        return msg, addr
     
