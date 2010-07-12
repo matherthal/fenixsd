@@ -7,6 +7,7 @@ Created on 11/07/2010
 
 from message import Message
 from state import State
+from messenger import Messenger
 
 class Coordinator(object):
     '''
@@ -31,7 +32,9 @@ class Coordinator(object):
     def processMessage(self, message):
         if message.msg_type == Message.STATE_MESSAGE:
             print 'Processando uma mensagem STATE'
-            state = State.strToState(message.data)
+            
+            
+            state = State
 
             """
             Tem que ser uma mensagem vindo do ATIVO

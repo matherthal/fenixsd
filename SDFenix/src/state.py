@@ -24,4 +24,4 @@ class State(object):
         self.data = None
     
     def __str__(self):
-        return str(self.message) + ' ' + self.data 
+        return str(self.message) + ' ' + self.data

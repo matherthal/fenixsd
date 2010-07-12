@@ -31,23 +31,30 @@ class Messenger(object):
     def _removeHeader(self, message):
         raise NotImplementedError
     
+    def stringToMessage(self, string):
+        fields = string.split()
+        
+        """
+        Campos da mensagem:
+        Type Sender Receiver Sequence Data
+        """ 
+        
+        return Message(sender=fields[1], \
+                      receiver=fields[2],sequence=fields[3], \
+                      msg_type=fields[0], \
+                      data=fields[4])
+    
+    
     def send(self, destination, message):
         """
         Aqui não se deve enviar a mensagem diretamente, deve-se criar um objeto Message.
         Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
         """
         
-        #next_sequence = 
-        
-        msg = Message(sender=self.coordinator.id, \
-                      receiver=destination,sequence=0, \
-                      msg_type=Message.NORMAL_MESSAGE, \
-                      data=message)
-        
         
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.sendto(message, (destination, self.port))
-        fd.close()
+        fd.close()        
     
     def receive(self):
         raise NotImplementedError
@@ -61,4 +68,7 @@ class Messenger(object):
         # set mcast group
         mreq = struct.pack('4sl', socket.inet_aton(self.multicast_group), socket.INADDR_ANY)
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        data, addr = fd.recvfrom(1024)
+        
+        
     

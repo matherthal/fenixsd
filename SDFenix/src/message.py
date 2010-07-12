@@ -30,4 +30,4 @@ class Message(object):
         self.data = data
         
     def __str__(self):
-        return self.sender + ' ' + self.receiver + ' ' + self.sequence + ' ' + self.msg_type + ' ' + str(self.data)
+        return self.msg_type + ' ' + self.sender + ' ' + self.receiver + ' ' + self.sequence + ' ' + str(self.data)
