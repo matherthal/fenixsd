@@ -9,6 +9,12 @@ from message import Message
 from state import State
 from messenger import Messenger
 
+
+def init_FenixSD(messenger,coordinator):
+    messenger.coordinator = coordinator
+    coordinator.messenger = messenger
+    
+
 class Coordinator(object):
     '''
     Classe estática (não em constructor).

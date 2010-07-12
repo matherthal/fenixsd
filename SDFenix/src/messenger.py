@@ -72,7 +72,6 @@ class Messenger(object):
         fd.close()        
     
     def receive(self):
-        raise NotImplementedError
 
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -87,9 +86,7 @@ class Messenger(object):
         
         msg = self.stringToMessage(data)
         
-        """        
-        Aqui vai entrar o temporizador, e tratar o recebimento de mensagens.
-        """
+        self.coordinator.processMessage(msg)
         
-        return msg, addr
+        return msg.data, addr
     
