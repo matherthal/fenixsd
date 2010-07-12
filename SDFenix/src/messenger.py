@@ -26,12 +26,6 @@ class Messenger(object):
     port = 1905
     multicast_group = '225.0.0.1'
     
-    def _insertHeader(self, data):
-        raise NotImplementedError
-    
-    def _removeHeader(self, message):
-        raise NotImplementedError
-    
     def stringToMessage(self, string):
         """
         Campos da mensagem:
