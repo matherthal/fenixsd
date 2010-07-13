@@ -26,6 +26,11 @@ class Coordinator(object):
     ACTIVE = 1
     _stateList = []
     _mode = PASSIVE #indefinido inicialmentes
+    _type = None
+    
+    def __init__(self, type):
+        self._type = type
+    
     id = None #id da máquina
     
         
