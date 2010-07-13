@@ -86,7 +86,8 @@ class Messenger(object):
             
             fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             fd.sendto(str(self.msg), (multicast, self.port))
-            fd.close()        
+            fd.close()
+            self.msg.msg_type = REPLY        
     
     def receive(self):               
         '''
