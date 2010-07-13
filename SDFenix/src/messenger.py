@@ -8,6 +8,7 @@ import sys, socket, struct
 
 from message import Message
 from state import State
+from consts import Consts
 
 class Messenger(object):
     '''
@@ -23,16 +24,11 @@ class Messenger(object):
     Além disso, para preencher essas informações, o Messenger precisa se comunicar 
     com o Coordinator para poder obter a última sequencia recebida de um cliente. 
     '''
-    port = 1905
-    multicast_group = '225.0.0.1'
+    port = 1905    
     
     msgStr = None
     dest = None
     msg = None
-    
-    def __init__(self):
-        self.msg.msg_type = REQUEST
-         
     
     def stringToMessage(self, string):
         """
@@ -42,8 +38,9 @@ class Messenger(object):
         fields = string.split() 
         
         return Message(sender=fields[1], \
-                      receiver=fields[2],sequence=fields[3], \
-                      msg_type=fields[0], \
+                      receiver=fields[2], \
+                      sequence=int(fields[3]), \
+                      msg_type=int(fields[0]), \
                       data=fields[4])
         
     def messageToString(self, message):
@@ -61,41 +58,50 @@ class Messenger(object):
         state.message = self.stringToMessage(fields[0])
         state.data = fields[1]        
     
-    def send(self, destination, message):       
-        msgStr = message #msgStr é global de message
-        msg = self.stringToMessage(message)
-        raise NotImplementedError
-        dest = destination #dest é global de destination
+    def send(self, destination, message):
+        msgStr = message     
+        self.msg = Message(sender=self.coordinator.id, \
+                      receiver=destination,\
+                      sequence=0, \
+                      msg_type=Message.NORMAL_MESSAGE, \
+                      data=message)
+        
+        if destination in Consts.SERVER_NAMES:
+            multicast = Consts.SERVER_MULTICAST_GROUP
+        elif destination in Consts.CLIENT_NAMES:
+            multicast = Consts.CLIENT_MULTICAST_GROUP
+        else:
+            raise Exception('Destino desconhecido: ' + destination)
+        
         """        
         Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
         """
         
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        fd.sendto(message, (destination, self.port))
+        fd.sendto(str(self.msg), (multicast, self.port))
         fd.close()        
     
     def receive(self):
-
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        if (msg.msg_type == msg.REPLY):
+        
+        if self.msg != None and self.msg.msg_type == self.msg.REPLY:
             fd.settimeout(.5)
                 
         # bind udp port
         fd.bind(('', self.port))
     
         # set mcast group
-        mreq = struct.pack('4sl', socket.inet_aton(self.multicast_group), socket.INADDR_ANY)
+        mreq = struct.pack('4sl', socket.inet_aton(Consts.SERVER_MULTICAST_GROUP), socket.INADDR_ANY)
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         try:
             data, addr = fd.recvfrom(1024)
         except:
-            send(dest, mesg)
-            receive()    
+            self.send(self.dest, self.msg)
+            self.receive()    
         
         msg = self.stringToMessage(data)
         
         self.coordinator.processMessage(msg)
         
-        return msg.data, addr
-    
+        return msg.data, msg.sender 
