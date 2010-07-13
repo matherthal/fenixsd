@@ -10,7 +10,6 @@ from message import Message
 from state import State
 import exceptions
 from consts import Consts
-from coordinator import Coordinator
 
 class Messenger(object):
     '''
@@ -66,27 +65,28 @@ class Messenger(object):
         state.data = fields[1]        
     
     def send(self, destination, message):
-        msgStr = message     
-        self.msg = Message(sender=self.coordinator.id, \
-                      receiver=destination,\
-                      sequence=0, \
-                      msg_type=Message.NORMAL_MESSAGE, \
-                      data=message)
-        
-        if destination in Consts.SERVER_NAMES:
-            multicast = Consts.SERVER_MULTICAST_GROUP
-        elif destination in Consts.CLIENT_NAMES:
-            multicast = Consts.CLIENT_MULTICAST_GROUP
-        else:
-            raise Exception('Destino desconhecido: ' + destination)
-        
-        """
-        Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
-        """
-        
-        fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        fd.sendto(str(self.msg), (multicast, self.port))
-        fd.close()        
+        if destination != None and message != None:
+            msgStr = message     
+            self.msg = Message(sender=self.coordinator.id, \
+                          receiver=destination,\
+                          sequence=0, \
+                          msg_type=Message.NORMAL_MESSAGE, \
+                          data=message)
+            
+            if destination in Consts.SERVER_NAMES:
+                multicast = Consts.SERVER_MULTICAST_GROUP
+            elif destination in Consts.CLIENT_NAMES:
+                multicast = Consts.CLIENT_MULTICAST_GROUP
+            else:
+                raise Exception('Destino desconhecido: ' + str(destination))
+            
+            """
+            Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
+            """
+            
+            fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            fd.sendto(str(self.msg), (multicast, self.port))
+            fd.close()        
     
     def receive(self):               
         '''
@@ -110,13 +110,14 @@ class Messenger(object):
         
         try:
             data, addr = fd.recvfrom(1024)
+            
+            msg = self.stringToMessage(data)        
+            self.coordinator.processMessage(msg)        
+            return msg.data, msg.sender 
         except:
             #if Coordinator._mode == Coordinator.ACTIVE:
             self.send(self.dest, self.msg)
-            self.receive()   
+            return self.receive()   
             #else: #Se a maquina for de backup, quando o timeout estoura, deve assumir o papel de coordenador
             #    Coordinator.setActive(self)
-        
-        msg = self.stringToMessage(data)        
-        self.coordinator.processMessage(msg)        
-        return msg.data, msg.sender 
+                
