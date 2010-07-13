@@ -8,6 +8,8 @@ Created on 12/07/2010
 from messenger import Messenger
 import coordinator
 import sys
+from consts import Consts
+
 
 class Servidor(object):
     '''
@@ -21,8 +23,9 @@ class Servidor(object):
         '''
         Inicialização de TF:
         '''        
-        messenger = Messenger()            
-        coord = coordinator.Coordinator()
+        messenger = Messenger() 
+        const = Consts()           
+        coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
