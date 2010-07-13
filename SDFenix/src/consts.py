@@ -10,3 +10,5 @@ class Consts(object):
     ANYONE_MULTICAST_GROUP = '224.0.0.1'
     SERVER_NAMES = ['Server']
     CLIENT_NAMES = ['Bob','Alice']
+    CORDINATOR_TYPE = ['Cliente','Servidor', 'Backup']
+    
