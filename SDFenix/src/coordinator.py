@@ -8,7 +8,6 @@ Created on 11/07/2010
 from message import Message
 from messenger import Messenger
 
-
 def init_FenixSD(messenger,coordinator):
     '''
     Função para fazer as classes se conhecerem
