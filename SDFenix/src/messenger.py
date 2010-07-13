@@ -32,8 +32,11 @@ class Messenger(object):
     
     msgStr = None
     dest = None
-    msg = None
-    
+    msg = Message(None,None,None,None,None)
+   
+    def _init_(self):
+        self.msg.msg_type = self.msg.REQUEST
+        
     def stringToMessage(self, string):
         """
         Campos da mensagem:
