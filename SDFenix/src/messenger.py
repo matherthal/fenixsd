@@ -8,6 +8,7 @@ import sys, socket, struct
 
 from message import Message
 from state import State
+import exceptions
 from consts import Consts
 
 class Messenger(object):
@@ -24,7 +25,9 @@ class Messenger(object):
     Além disso, para preencher essas informações, o Messenger precisa se comunicar 
     com o Coordinator para poder obter a última sequencia recebida de um cliente. 
     '''
-    port = 1905    
+    port = 1905
+    #multicast_group = '225.0.0.1'
+    timeout = 3 #timeout em segundos
     
     msgStr = None
     dest = None
@@ -73,7 +76,7 @@ class Messenger(object):
         else:
             raise Exception('Destino desconhecido: ' + destination)
         
-        """        
+        """
         Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
         """
         
@@ -81,7 +84,11 @@ class Messenger(object):
         fd.sendto(str(self.msg), (multicast, self.port))
         fd.close()        
     
-    def receive(self):
+    def receive(self):               
+        '''
+        Retorna (mensagem, origem) quando a mensagem chega dentro do timeout
+        E retornar um erro quando o timeout chega ao fim
+        '''
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         
