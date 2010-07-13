@@ -7,6 +7,7 @@ Created on 11/07/2010
 
 from message import Message
 from messenger import Messenger
+from consts import Consts
 
 def init_FenixSD(messenger,coordinator):
     '''
@@ -59,7 +60,7 @@ class Coordinator(object):
                             stateListAux.append(s)
                 
                 if len(stateListAux) == len(self._stateList):
-                    'Estado de Cliente novo detectado'
+                    print 'Estado de Cliente novo detectado'
                 
                 stateListAux.append(state)
                 self._stateList = stateListAux                
@@ -73,6 +74,6 @@ class Coordinator(object):
             print 'Processando uma mensagem ACK'          
             raise NotImplementedError
         else:    
-            raise Exception("Tipo de mensagem desconhecido")
+            raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
         
         
