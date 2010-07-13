@@ -9,7 +9,8 @@ from messenger import Messenger
 import coordinator
 import sys
 from consts import Consts
-
+from state import State
+from message import Message 
 
 class Servidor(object):
     '''
@@ -25,7 +26,8 @@ class Servidor(object):
         '''        
 
         const = Consts()           
-        coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])        
+        #coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])    
+        coord = coordinator.Coordinator()
         messenger = Messenger() 
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
@@ -33,9 +35,10 @@ class Servidor(object):
             coord.id = Consts.SERVER_NAMES[0]
         
         clientList = {}        
-        while(True):
+        while(True):            
             print 'Servidor: esperando requisições...'                        
-            data, client = messenger.receive()
+            message = messenger.receive()
+            data, client = message.data, message.sender
             if not (client in clientList):
                 print 'Servidor: novo cliente'
                 clientList[client] = 0 #cria o cliente
@@ -43,6 +46,10 @@ class Servidor(object):
             print 'Servidor: processando requisição'
             clientList[client] += int(data)
             print 'Servidor: enviando resposta para ' + str(client)
+            state = State()
+            state.message = message
+            state.data = clientList[client] 
+            coord.refreshState(state)
             messenger.send(client, clientList[client])
             
 

@@ -5,9 +5,10 @@ Created on Jul 12, 2010
 '''
 
 class Consts(object):
-    CLIENT_MULTICAST_GROUP = '226.0.0.1'
-    SERVER_MULTICAST_GROUP = '225.0.0.1'
+    #CLIENT_MULTICAST_GROUP = '226.0.0.2'
+    #SERVER_MULTICAST_GROUP = '225.0.0.1'
     SERVER_NAMES = ['Server']
-    CLIENT_NAMES = ['Bob','Alice']
+    GROUPS = {'Rodrigo':'226.0.0.1','Vinicius':'226.0.0.2','Giulio':'226.0.0.3','Douglas':'226.0.0.4',\
+              'Matheus':'226.0.0.5','Carlos':'226.0.0.6','Server':'225.0.0.1'}
     CORDINATOR_TYPE = ['Cliente','Servidor', 'Backup']
-    
+    TIMEOUT_STATE = 3

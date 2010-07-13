@@ -27,11 +27,13 @@ class Messenger(object):
     '''
     port = 1905
     #multicast_group = '225.0.0.1'
-    timeout = 3 #timeout em segundos
+    timeout = 5 #timeout em segundos
     
     msgStr = None
     dest = None
     msg = Message(None,None,None,None,None)
+
+    next_sequence = 0
    
     def _init_(self):
         self.msg.msg_type = self.msg.REQUEST
@@ -52,6 +54,12 @@ class Messenger(object):
     def messageToString(self, message):
         return str(message)
     
+    def getNextSeq(self, id):
+        for state in self.coordinator._stateList:
+            if state.message.sender == id:
+                return state.message.sequence + 1
+        return 0 
+    
     def stringToState(self, string):
         """
         Campos do state:
@@ -65,20 +73,24 @@ class Messenger(object):
         state.data = fields[1]        
     
     def send(self, destination, message):
-        if destination != None and message != None:
-            msgStr = message     
-            self.msg = Message(sender=self.coordinator.id, \
-                          receiver=destination,\
-                          sequence=0, \
-                          msg_type=Message.NORMAL_MESSAGE, \
-                          data=message)
+        if destination != None and message != None:                     
+            msgStr = message            
             
-            if destination in Consts.SERVER_NAMES:
-                multicast = Consts.SERVER_MULTICAST_GROUP
-            elif destination in Consts.CLIENT_NAMES:
-                multicast = Consts.CLIENT_MULTICAST_GROUP
-            else:
-                raise Exception('Destino desconhecido: ' + str(destination))
+            self.msg = Message(sender=self.coordinator.id, \
+                      receiver=destination,\
+                      sequence=self.next_sequence, \
+                      msg_type=Message.NORMAL_MESSAGE, \
+                      data=message)
+            
+            multicast = Consts.GROUPS[destination]
+            if multicast == None:
+                raise Exception('Destino desconhecido: ' + str(destination)) 
+            #if destination in Consts.SERVER_NAMES:
+            #    multicast = Consts.SERVER_MULTICAST_GROUP
+            #elif destination in Consts.CLIENT_NAMES:
+            #    multicast = Consts.CLIENT_MULTICAST_GROUP
+            #else:
+            #    raise Exception('Destino desconhecido: ' + str(destination))
             
             """
             Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
@@ -88,6 +100,8 @@ class Messenger(object):
             fd.sendto(str(self.msg), (multicast, self.port))
             fd.close()
             self.msg.msg_type = Message.REPLY        
+        else:
+            raise Exception('destino ou mensagem são nulos')
     
     def receive(self):               
         '''
@@ -97,36 +111,45 @@ class Messenger(object):
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         
-        if self.msg != None and self.msg.msg_type == self.msg.REPLY:
-            fd.settimeout(.5)
+        #Definir o tempo de timeout
+        fd.settimeout(self.timeout)
                 
         # bind udp port
         fd.bind(('', self.port))
-    
-        # set mcast group
-        if self.coordinator.id in Consts.CLIENT_NAMES:
-            mreq = struct.pack('4sl', socket.inet_aton(Consts.CLIENT_MULTICAST_GROUP), socket.INADDR_ANY)
-        elif self.coordinator.id in Consts.SERVER_NAMES:
-            mreq = struct.pack('4sl', socket.inet_aton(Consts.SERVER_MULTICAST_GROUP), socket.INADDR_ANY)
-        else:
+        
+        multicast = Consts.GROUPS[self.coordinator.id]
+        if multicast == None:
             raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
+        mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)
+        # set mcast group
+        #if self.coordinator.id in Consts.CLIENT_NAMES:
+        #    mreq = struct.pack('4sl', socket.inet_aton(Consts.CLIENT_MULTICAST_GROUP), socket.INADDR_ANY)
+        #elif self.coordinator.id in Consts.SERVER_NAMES:
+        #    mreq = struct.pack('4sl', socket.inet_aton(Consts.SERVER_MULTICAST_GROUP), socket.INADDR_ANY)
+        #else:
+        #    raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
+                
+        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                
         
-        
-        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        #Definir o tempo de timeout
-        fd.settimeout(self.timeout)
         
         try:
             data, addr = fd.recvfrom(1024)
+            msg_rec = self.stringToMessage(data)
+            self.coordinator.processMessage(msg_rec)
             
-            msg = self.stringToMessage(data)        
-            self.coordinator.processMessage(msg)
-            return msg.data, msg.sender 
+            #return msg_rec.data, msg_rec.sender
+            return msg_rec                                       
         except:
             print 'Timeout!'
             #if Coordinator._mode == Coordinator.ACTIVE:
-            self.send(self.dest, self.msg)
+            if self.dest != None:
+                self.send(self.dest, self.msg)
             return self.receive()   
             #else: #Se a maquina for de backup, quando o timeout estoura, deve assumir o papel de coordenador
             #    Coordinator.setActive(self)
-                
+            
+            
+    def prepare(self):
+        self.next_sequence += 1
+        print 'NextSequence = ' + str(self.next_sequence)
+        
