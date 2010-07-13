@@ -30,7 +30,7 @@ class Servidor(object):
         
         clientList = {}        
         while(True):
-            print 'Servidor: esperando msgs...' 
+            print 'Servidor: esperando requisições...' 
             data, client = messenger.receive()
             if not (client in clientList):
                 print 'Servidor: novo cliente'
