@@ -26,6 +26,10 @@ class Messenger(object):
     port = 1905
     multicast_group = '225.0.0.1'
     
+    msgStr = None
+    dest = None
+    msg = None
+    
     def stringToMessage(self, string):
         """
         Campos da mensagem:
@@ -54,9 +58,10 @@ class Messenger(object):
         state.data = fields[1]        
     
     def send(self, destination, message):       
+        msgStr = message #msgStr é global de message
         msg = self.stringToMessage(message)
         raise NotImplementedError
-        
+        dest = destination #dest é global de destination
         """        
         Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
         """
@@ -69,14 +74,20 @@ class Messenger(object):
 
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    
+        if (msg.msg_type == msg.REPLY):
+            fd.settimeout(.5)
+                
         # bind udp port
         fd.bind(('', self.port))
     
         # set mcast group
         mreq = struct.pack('4sl', socket.inet_aton(self.multicast_group), socket.INADDR_ANY)
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        data, addr = fd.recvfrom(1024)
+        try:
+            data, addr = fd.recvfrom(1024)
+        except:
+            send(dest, mesg)
+            receive()    
         
         msg = self.stringToMessage(data)
         
