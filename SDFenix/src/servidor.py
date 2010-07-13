@@ -25,7 +25,8 @@ class Servidor(object):
         '''        
 
         const = Consts()           
-        coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])
+        coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])        
+        messenger = Messenger() 
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
@@ -33,8 +34,7 @@ class Servidor(object):
         
         clientList = {}        
         while(True):
-            print 'Servidor: esperando requisições...' 
-            messenger = Messenger()
+            print 'Servidor: esperando requisições...'                        
             data, client = messenger.receive()
             if not (client in clientList):
                 print 'Servidor: novo cliente'
