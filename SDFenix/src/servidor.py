@@ -23,7 +23,7 @@ class Servidor(object):
         '''
         Inicialização de TF:
         '''        
-        messenger = Messenger() 
+
         const = Consts()           
         coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])
         coordinator.init_FenixSD(messenger, coord)
@@ -34,6 +34,7 @@ class Servidor(object):
         clientList = {}        
         while(True):
             print 'Servidor: esperando requisições...' 
+            messenger = Messenger()
             data, client = messenger.receive()
             if not (client in clientList):
                 print 'Servidor: novo cliente'
