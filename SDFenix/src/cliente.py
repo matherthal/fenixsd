@@ -6,6 +6,7 @@ Created on Jul 12, 2010
 '''
 
 from messenger import Messenger
+from consts import Consts
 import coordinator
 import sys
 import random
@@ -26,7 +27,7 @@ class Cliente(object):
         ''' 
         print 'Cliente: Inicializando...'       
         messenger = Messenger()            
-        coord = coordinator.Coordinator()
+        coord = coordinator.Coordinator(Consts.CORDINATOR_TYPE[0])
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
