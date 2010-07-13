@@ -10,8 +10,8 @@ class Message(object):
     classdocs
     '''
     
-    REQUEST = 0
-    REPLY = 1
+    REQUEST = 3
+    REPLY = 4
     
     #Tipos de mensagem
     NORMAL_MESSAGE = 0 #a mensagem deve ser repassada para a aplicação
@@ -29,5 +29,5 @@ class Message(object):
         self.msg_type = msg_type
         self.data = data
         
-    def __str__(self):
-        return self.msg_type + ' ' + self.sender + ' ' + self.receiver + ' ' + self.sequence + ' ' + str(self.data)
+    def __str__(self):        
+        return str(self.msg_type) + ' ' + self.sender + ' ' + self.receiver + ' ' + str(self.sequence) + ' ' + str(self.data)
