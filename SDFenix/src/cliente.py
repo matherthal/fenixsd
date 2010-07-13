@@ -38,8 +38,8 @@ class Cliente(object):
             message = str(5)
             messenger.send(self.serverID, message)
             print 'Cliente: esperando resposta...'
-            resp = messenger.receive()
-            print 'Cliente: resposta = ' + resp
+            resp, id = messenger.receive()
+            print 'Cliente: resposta = ' + str(resp) + ' ' + str(id) 
             time.sleep(int(random.random() * 5 + 1)) #espera de 1 a 5 segundos
 
 if __name__ == '__main__':

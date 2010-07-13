@@ -30,7 +30,7 @@ class Servidor(object):
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
-            coord.id = 'Server'
+            coord.id = Consts.SERVER_NAMES[0]
         
         clientList = {}        
         while(True):
@@ -42,8 +42,9 @@ class Servidor(object):
             
             print 'Servidor: processando requisição'
             clientList[client] += int(data)
-            print 'Servidor: enviando resposta'
+            print 'Servidor: enviando resposta para ' + str(client)
             messenger.send(client, clientList[client])
+            
 
 
 if __name__ == '__main__':

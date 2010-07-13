@@ -87,7 +87,7 @@ class Messenger(object):
             fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             fd.sendto(str(self.msg), (multicast, self.port))
             fd.close()
-            self.msg.msg_type = REPLY        
+            self.msg.msg_type = Message.REPLY        
     
     def receive(self):               
         '''
@@ -104,7 +104,14 @@ class Messenger(object):
         fd.bind(('', self.port))
     
         # set mcast group
-        mreq = struct.pack('4sl', socket.inet_aton(Consts.SERVER_MULTICAST_GROUP), socket.INADDR_ANY)
+        if self.coordinator.id in Consts.CLIENT_NAMES:
+            mreq = struct.pack('4sl', socket.inet_aton(Consts.CLIENT_MULTICAST_GROUP), socket.INADDR_ANY)
+        elif self.coordinator.id in Consts.SERVER_NAMES:
+            mreq = struct.pack('4sl', socket.inet_aton(Consts.SERVER_MULTICAST_GROUP), socket.INADDR_ANY)
+        else:
+            raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
+        
+        
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         #Definir o tempo de timeout
         fd.settimeout(self.timeout)
@@ -113,9 +120,10 @@ class Messenger(object):
             data, addr = fd.recvfrom(1024)
             
             msg = self.stringToMessage(data)        
-            self.coordinator.processMessage(msg)        
+            self.coordinator.processMessage(msg)
             return msg.data, msg.sender 
         except:
+            print 'Timeout!'
             #if Coordinator._mode == Coordinator.ACTIVE:
             self.send(self.dest, self.msg)
             return self.receive()   
