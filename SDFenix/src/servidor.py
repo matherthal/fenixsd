@@ -7,6 +7,7 @@ Created on 12/07/2010
 
 from messenger import Messenger
 import coordinator
+import sys
 
 class Servidor(object):
     '''
@@ -16,15 +17,16 @@ class Servidor(object):
     def __init__(self, isPassive):
         self.isPassive = isPassive
         
-    def main(self):
+    def start(self):
         '''
         Inicialização de TF:
         '''        
         messenger = Messenger()            
-        coordinator = coordinator.Coordinator()
-        coordinator.init_FenixSD(messenger, coordinator)
+        coord = coordinator.Coordinator()
+        coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
-            coordinator.setActive()
+            coord.setActive()
+            coord.id = 'Server'
         
         clientList = {}        
         while(True):
@@ -38,3 +40,11 @@ class Servidor(object):
             clientList[client] += int(data)
             print 'Servidor: enviando resposta'
             messenger.send(client, clientList[client])
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print 'Parâmetros: a/p - ativo/passivo'
+    else:
+        servidor = Servidor(sys.argv[1] == 'p')
+        servidor.start()
