@@ -36,6 +36,7 @@ class Cliente(object):
             print 'Cliente: enviando requisição'
             message = str(5)
             messenger.send(self.serverID, message)
+            print 'Cliente: esperando resposta...'
             resp = messenger.receive()
             print 'Cliente: resposta = ' + resp
             time.sleep(int(random.random() * 5 + 1)) #espera de 1 a 5 segundos
