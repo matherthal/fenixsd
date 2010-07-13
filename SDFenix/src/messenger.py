@@ -10,6 +10,7 @@ from message import Message
 from state import State
 import exceptions
 from consts import Consts
+from coordinator import Coordinator
 
 class Messenger(object):
     '''
@@ -101,14 +102,18 @@ class Messenger(object):
         # set mcast group
         mreq = struct.pack('4sl', socket.inet_aton(Consts.SERVER_MULTICAST_GROUP), socket.INADDR_ANY)
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        #Definir o tempo de timeout
+        fd.settimeout(self.timeout)
+        
         try:
             data, addr = fd.recvfrom(1024)
         except:
+            #if Coordinator._mode == Coordinator.ACTIVE:
             self.send(self.dest, self.msg)
-            self.receive()    
+            self.receive()   
+            #else: #Se a maquina for de backup, quando o timeout estoura, deve assumir o papel de coordenador
+            #    Coordinator.setActive(self)
         
-        msg = self.stringToMessage(data)
-        
-        self.coordinator.processMessage(msg)
-        
+        msg = self.stringToMessage(data)        
+        self.coordinator.processMessage(msg)        
         return msg.data, msg.sender 
