@@ -10,6 +10,7 @@ from message import Message
 from state import State
 import exceptions
 from consts import Consts
+from threading import Timer
 
 class Messenger(object):
     '''
@@ -25,18 +26,9 @@ class Messenger(object):
     Além disso, para preencher essas informações, o Messenger precisa se comunicar 
     com o Coordinator para poder obter a última sequencia recebida de um cliente. 
     '''
-    port = 1905
-    #multicast_group = '225.0.0.1'
+    port = 1905    
     timeout = 5 #timeout em segundos
-    
-    msgStr = None
-    dest = None
-    msg = Message(None,None,None,None,None)
-
     next_sequence = 0
-   
-    def _init_(self):
-        self.msg.msg_type = self.msg.REQUEST
         
     def stringToMessage(self, string):
         """
@@ -70,36 +62,28 @@ class Messenger(object):
         
         state = State()
         state.message = self.stringToMessage(fields[0])
-        state.data = fields[1]        
+        state.data = fields[1]
+        
+    def resend(self):
+        print 'resend'      
     
-    def send(self, destination, message):
-        if destination != None and message != None:                     
-            msgStr = message            
+    def send(self, destination, message, type=Message.NORMAL_MESSAGE):
+        if destination != None and message != None:          
             
-            self.msg = Message(sender=self.coordinator.id, \
-                      receiver=destination,\
-                      sequence=self.next_sequence, \
-                      msg_type=Message.NORMAL_MESSAGE, \
-                      data=message)
+            msg = Message(sender=self.coordinator.id, \
+                          receiver=destination,\
+                          sequence=self.next_sequence, \
+                          msg_type=type, \
+                          data=message)
+            
             
             multicast = Consts.GROUPS[destination]
             if multicast == None:
-                raise Exception('Destino desconhecido: ' + str(destination)) 
-            #if destination in Consts.SERVER_NAMES:
-            #    multicast = Consts.SERVER_MULTICAST_GROUP
-            #elif destination in Consts.CLIENT_NAMES:
-            #    multicast = Consts.CLIENT_MULTICAST_GROUP
-            #else:
-            #    raise Exception('Destino desconhecido: ' + str(destination))
-            
-            """
-            Aqui vai entrar o temporizador, e tratar o reenvio de mensagens.
-            """
+                raise Exception('Destino desconhecido: ' + str(destination))
             
             fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            fd.sendto(str(self.msg), (multicast, self.port))
+            fd.sendto(str(msg), (multicast, self.port))
             fd.close()
-            self.msg.msg_type = Message.REPLY        
         else:
             raise Exception('destino ou mensagem são nulos')
     
@@ -110,9 +94,6 @@ class Messenger(object):
         '''
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        
-        #Definir o tempo de timeout
-        #fd.settimeout(self.timeout)
                 
         # bind udp port
         fd.bind(('', self.port))
@@ -121,28 +102,16 @@ class Messenger(object):
         if multicast == None:
             raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
         mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)
-        # set mcast group
-        #if self.coordinator.id in Consts.CLIENT_NAMES:
-        #    mreq = struct.pack('4sl', socket.inet_aton(Consts.CLIENT_MULTICAST_GROUP), socket.INADDR_ANY)
-        #elif self.coordinator.id in Consts.SERVER_NAMES:
-        #    mreq = struct.pack('4sl', socket.inet_aton(Consts.SERVER_MULTICAST_GROUP), socket.INADDR_ANY)
-        #else:
-        #    raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
                 
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                        
         
-        #try:
-        data, addr = fd.recvfrom(1024)
+        data, addr = fd.recvfrom(1024)        
+                    
         msg_rec = self.stringToMessage(data)
-        self.coordinator.processMessage(msg_rec)
+        
         
         #return msg_rec.data, msg_rec.sender
-        return msg_rec                                       
-        #except:
-        #    print 'Timeout!'
-        #    if self.dest != None:
-        #        self.send(self.dest, self.msg)
-        #    return self.receive()               
+        return self.coordinator.processMessage(msg_rec)           
             
     def prepare(self):
         self.next_sequence += 1

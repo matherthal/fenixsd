@@ -26,16 +26,12 @@ class Coordinator(object):
     ACTIVE = 1
     _stateList = []
     _mode = PASSIVE #indefinido inicialmentes
-    #_type = None
     id = None #id da máquina
     state_timer = None
-    
-    #def __init__(self, coordtype):
-        #self._type = coordtype
         
     def setActive(self):
         self._mode = self.ACTIVE
-        #self.setStateTimer()
+        self.setStateTimer()
         
     def setStateTimer(self):
         if self.state_timer != None: 
@@ -47,12 +43,7 @@ class Coordinator(object):
         self._mode = self.PASSIVE
         
     def heartbeat(self):        
-        message = Message(sender=self.id, \
-                          receiver=Consts.GROUPS[self.id],\
-                          sequence=0, \
-                          msg_type=Message.STATE_MESSAGE, \
-                          data=None)
-        self.messenger.send(self.id, message)
+        self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
     
     def refreshState(self, state):
         """
@@ -78,13 +69,14 @@ class Coordinator(object):
         if message.msg_type == Message.STATE_MESSAGE:
             """
             A maquina passiva recebe um estado.
-            Não é possível a máquina ativa receber um estado.
+            Não interessa a máquina ativa receber um estado.
             """
             print 'Processando uma mensagem STATE'
             
             if self._mode == self.ACTIVE:
                 print 'Ignorando salvamento de estado'
-                return
+                print 'Voltando para o receive'
+                return self.messenger.receive()
             
             state = self.messenger.stringToState(message.data)
             self.refreshState(state)
@@ -143,4 +135,4 @@ class Coordinator(object):
         else:    
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
         
-        
+        return message

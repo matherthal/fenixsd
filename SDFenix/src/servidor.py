@@ -32,7 +32,7 @@ class Servidor(object):
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
-            coord.id = Consts.SERVER_NAMES[0]
+            coord.id = 'Server'
         
         clientList = {}        
         while(True):            
