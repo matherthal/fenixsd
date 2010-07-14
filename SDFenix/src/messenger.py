@@ -112,7 +112,7 @@ class Messenger(object):
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         
         #Definir o tempo de timeout
-        fd.settimeout(self.timeout)
+        #fd.settimeout(self.timeout)
                 
         # bind udp port
         fd.bind(('', self.port))
@@ -129,25 +129,20 @@ class Messenger(object):
         #else:
         #    raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
                 
-        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                
+        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                        
         
+        #try:
+        data, addr = fd.recvfrom(1024)
+        msg_rec = self.stringToMessage(data)
+        self.coordinator.processMessage(msg_rec)
         
-        try:
-            data, addr = fd.recvfrom(1024)
-            msg_rec = self.stringToMessage(data)
-            self.coordinator.processMessage(msg_rec)
-            
-            #return msg_rec.data, msg_rec.sender
-            return msg_rec                                       
-        except:
-            print 'Timeout!'
-            #if Coordinator._mode == Coordinator.ACTIVE:
-            if self.dest != None:
-                self.send(self.dest, self.msg)
-            return self.receive()   
-            #else: #Se a maquina for de backup, quando o timeout estoura, deve assumir o papel de coordenador
-            #    Coordinator.setActive(self)
-            
+        #return msg_rec.data, msg_rec.sender
+        return msg_rec                                       
+        #except:
+        #    print 'Timeout!'
+        #    if self.dest != None:
+        #        self.send(self.dest, self.msg)
+        #    return self.receive()               
             
     def prepare(self):
         self.next_sequence += 1
