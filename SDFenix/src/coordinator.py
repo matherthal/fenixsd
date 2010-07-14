@@ -48,7 +48,9 @@ class Coordinator(object):
         self.setStateTimer()
     
     def refreshState(self, state):
-        "Salva o estado na lista de states"
+        """
+        Salva o estado na lista de states
+        """
         if state != None:                       
             stateListAux = []
             for s in self.stateList:
@@ -82,6 +84,12 @@ class Coordinator(object):
             state = self.messenger.stringToState(message.data)
             self.refreshState(state)
             
+            #DEBUG
+            print '    LISTA DE ESTADOS'
+            i = 0
+            for s in self.stateList:
+                print '       ' + str(i) + ' - ' + str(s)
+            #
             """
             Envia msg de ACK
             """
@@ -101,12 +109,6 @@ class Coordinator(object):
                 print 'Ignorando mensagem'                        
                 return self.messenger.receive() #volta a escutar
             
-            """            
-            Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
-            o envio de um State nulo.
-            """      
-            self.setStateTimer()
-            
             """
             Para salvar o estado, temos que procurar o id do cliente correspondente.
             """
@@ -115,7 +117,7 @@ class Coordinator(object):
                 if s != None:
                     if s.message.sender == message.sender:
                         state = s
-                        break            
+                        break
             
             if state != None:
                 """
@@ -125,9 +127,23 @@ class Coordinator(object):
                 self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)
                 #esperar o ACK aqui?
             
+            """            
+            Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
+            o envio de um State nulo.
+            """      
+            self.setStateTimer()
+            
+            #DEBUG
+            print '    LISTA DE ESTADOS'
+            i = 0
+            for s in self.stateList:
+                print '       ' + str(i) + ' - ' + str(s)
+            #
+            
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'          
             #zerar contador do reenvio do principal
+            #acho q é isso: self.setStateTimer()
             return self.messenger.receive() #volta a escutar
         else:    
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
