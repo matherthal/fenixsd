@@ -51,7 +51,7 @@ class Coordinator(object):
         """
         Salva o estado na lista de states
         """
-        if state.data != None:
+        if state.data != None:                       
             stateListAux = []
             for s in self.stateList:
                 if s != None:
@@ -62,7 +62,7 @@ class Coordinator(object):
                 print 'Estado de Cliente novo detectado'
             
             stateListAux.append(state)
-            self.stateList = stateListAux
+            self.stateList = stateListAux                
             print 'State inserido na lista'
         else:
             print 'Mensagem era um heartbeat'
@@ -75,7 +75,7 @@ class Coordinator(object):
             """
             print 'Processando uma mensagem STATE'
             
-            if self._mode == self.ACTIVE:
+            if self._mode == self.ACTIVE: 
                 print 'Ignorando salvamento de estado'
                 print 'Voltando para o receive'
                 return self.messenger.receive()
@@ -86,23 +86,24 @@ class Coordinator(object):
             """
             Envia msg de ACK
             """
-            print 'Enviando ACK para a máquina passiva'
-            message = Message(sender=self.id, \
-                  receiver=Consts.GROUPS[self.id],\
-                  sequence=0, \
-                  msg_type=Message.ACK_MESSAGE, \
-                  data=None)
+            print 'Enviando ACK para a máquina passiva' #mas esta eh a passiva!!
+            #message = Message(sender=self.id, \
+            #      receiver=Consts.GROUPS[self.id],\
+            #      sequence=0, \
+            #      msg_type=Message.ACK_MESSAGE, \
+            #      data=None)
+            self.messenger.send(self.id, str(None),Message.ACK_MESSAGE)
             
         elif message.msg_type == Message.NORMAL_MESSAGE:
             """
             A máquina ativa ou passiva receberam uma mensagem
-            """          
-            print "Mensagem do tipo normal =)"
-            
+            """            
             if self._mode == self.PASSIVE:                
-                #A máquina passiva recebe mensagens, mas as ignora.                            
+                #A máquina passiva recebe mensagens, mas as ignora.
+                print 'Servidor backup: ignorando mensagem do tipo normal'                        
                 return
             
+            print "Mensagem do tipo normal =)"
             """            
             Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
             o envio de um State nulo.
