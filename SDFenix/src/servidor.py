@@ -24,9 +24,6 @@ class Servidor(object):
         '''
         Inicialização de TF:
         '''        
-
-        #const = Consts()           
-        #coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])    
         coord = coordinator.Coordinator()
         coord.id = 'Server'
         messenger = Messenger(coord) 

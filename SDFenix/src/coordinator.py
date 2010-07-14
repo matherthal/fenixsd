@@ -110,28 +110,17 @@ class Coordinator(object):
             """
             A máquina ativa ou passiva receberam uma mensagem
             """
-            print 'Processando mensagem NORMAL'            
+            print 'Processando mensagem NORMAL'
             
             if self._mode == self.PASSIVE:                
                 #A máquina passiva recebe mensagens, mas as ignora.
                 print 'Ignorando mensagem'                        
                 return self.messenger.receive() #volta a escutar
             
-            "tratamento de duplicatas"
-            state = None
-            for st in self.stateList:
-                if st != None:
-                    if st.message.sender == message.sender:
-                        if st.message.sequence == message.sequence: #duplicada encontrada
-                            self.messenger.resend(st.message)
-                            return self.messenger.receive()
-                        break
-                         
-            
             """            
             Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
             o envio de um State nulo.
-            """      
+            """
             self.setActiveTimer()
             
             """
@@ -149,7 +138,10 @@ class Coordinator(object):
                 Devemos enviar o estado mais atual do cliente agora, antes de processar.            
                 """
                 print 'Enviando State: ' + str(state)
+                import sys
+                sys.stdin.readline()
                 self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)
+                
                 #esperar o ACK aqui?
             
         elif message.msg_type == Message.ACK_MESSAGE:
