@@ -9,6 +9,7 @@ from message import Message
 from messenger import Messenger
 from consts import Consts
 from threading import Timer
+from state import State
 
 def init_FenixSD(messenger,coordinator):
     '''
@@ -37,12 +38,14 @@ class Coordinator(object):
     def setActiveTimer(self):
         if self.active_timer != None: 
             self.active_timer.cancel()
+            del self.active_timer
         self.active_timer = Timer(Consts.TIMEOUT_ACTIVE,self.heartbeat)
         self.active_timer.start()
         
     def setPassiveTimer(self):
         if self.passive_timer != None: 
             self.passive_timer.cancel()
+            del self.passive_timer
         self.passive_timer = Timer(Consts.TIMEOUT_PASSIVE,self.assumeControl)
         self.passive_timer.start()
         
@@ -52,12 +55,13 @@ class Coordinator(object):
     
     def assumeControl(self):
         print 'Assumindo o controle!'
-        self.passive_timer.cancel()
+        self.passive_timer.cancel()        
         #self.setActive()
     
     def heartbeat(self):
-        print 'Enviando heartbeat'   
-        self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
+        print 'Enviando heartbeat'
+        state = State()
+        self.messenger.send(self.id, str(state),Message.STATE_MESSAGE)
         self.setActiveTimer()
     
     def refreshState(self, state):
@@ -83,6 +87,10 @@ class Coordinator(object):
     
     
     def processMessage(self, message):
+        if message.receiver != self.id:
+            print 'Msg não era para mim!'
+            return self.messenger.receive()
+                
         if message.msg_type == Message.STATE_MESSAGE:
             """
             A maquina passiva recebe um estado.
@@ -95,6 +103,9 @@ class Coordinator(object):
                 return self.messenger.receive()
             
             print 'Recebido msg: ' + str(message)
+            
+            
+            
             state = self.messenger.stringToState(message.data)
             self.refreshState(state)
             

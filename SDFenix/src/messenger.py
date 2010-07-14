@@ -60,16 +60,17 @@ class Messenger(object):
         """
         Campos do state:
         Message Data
-        """        
+        """     
         
-        if string == "None":
-            return None
+        fields = string.split()
         
-        fields = string.split()        
+        if len(fields) != 6:
+            raise Exception('Impossivel converter para State: ' + string)
+                
         state = State()
-        state.message = self.stringToMessage(fields[0])
-        state.data = fields[1]
-        return State
+        state.message = self.stringToMessage(string)
+        state.data = fields[6]
+        return state
         
     def resend(self, msg):
         print 'Reenviando mensagem'
@@ -150,7 +151,7 @@ class Messenger(object):
             self.resendList.pop() #recebeu com sucesso, remove da lista
             self.resendList_mutex.release()
         
-        msg_rec = self.stringToMessage(data)        
+        msg_rec = self.stringToMessage(data)
         
         #return msg_rec.data, msg_rec.sender
         return self.coordinator.processMessage(msg_rec)           

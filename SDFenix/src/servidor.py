@@ -43,13 +43,13 @@ class Servidor(object):
                 clientList[client] = 0 #cria o cliente
             
             print 'Servidor: processando requisição'
-            clientList[client] += int(data)
-            print 'Servidor: enviando resposta para ' + str(client)
+            clientList[client] += int(data)            
             state = State()
             state.message = message
             state.data = clientList[client]
             print 'Servidor: salvando estado: ' + str(state)
             coord.refreshState(state)
+            print 'Servidor: enviando resposta para ' + str(client)
             messenger.send(client, str(clientList[client]))
             
 if __name__ == '__main__':

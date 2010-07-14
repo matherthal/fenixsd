@@ -5,6 +5,8 @@ Created on 11/07/2010
 @author: Rondon
 '''
 
+from state import State
+
 class Message(object):
     '''
     classdocs
@@ -25,5 +27,5 @@ class Message(object):
         self.msg_type = msg_type
         self.data = data
         
-    def __str__(self):        
+    def __str__(self):
         return str(self.msg_type) + ' ' + str(self.sender) + ' ' + str(self.receiver) + ' ' + str(self.sequence) + ' ' + str(self.data)
