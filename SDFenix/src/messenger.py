@@ -35,6 +35,10 @@ class Messenger(object):
     resendList_mutex = Lock()
     
     def __init__(self, coordinator):
+        """
+        Inicia o socket para recebimento. 
+        Caso o socket não seja iniciado apenas uma vez, não haverá fila no sistema de comunicação
+        """
         self.coordinator = coordinator
         self.fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
