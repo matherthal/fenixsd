@@ -48,9 +48,7 @@ class Coordinator(object):
         self.setStateTimer()
     
     def refreshState(self, state):
-        """
-        Salva o estado na lista de states
-        """
+        "Salva o estado na lista de states"
         if state != None:                       
             stateListAux = []
             for s in self.stateList:

@@ -10,15 +10,11 @@ class Message(object):
     classdocs
     '''
     
-    REQUEST = 3
-    REPLY = 4
-    
     #Tipos de mensagem
     NORMAL_MESSAGE = 0 #a mensagem deve ser repassada para a aplicação
     STATE_MESSAGE = 1  #a mensagem carrega um State em data
     ACK_MESSAGE = 2 #mensagem de confirmação de recebimento de um State vindo do servidor Principal para o Secundário
     
-
     def __init__(self, sender, receiver, sequence, msg_type, data):
         '''
         Constructor

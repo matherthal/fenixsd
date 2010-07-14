@@ -28,11 +28,11 @@ class Servidor(object):
         #const = Consts()           
         #coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])    
         coord = coordinator.Coordinator()
-        messenger = Messenger() 
+        coord.id = 'Server'
+        messenger = Messenger(coord) 
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
-            coord.setActive()
-        coord.id = 'Server'
+            coord.setActive()        
         
         clientList = {}        
         while(True):            

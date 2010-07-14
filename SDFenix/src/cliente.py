@@ -28,14 +28,14 @@ class Cliente(object):
         '''
         Inicialização de TF:
         ''' 
-        print 'Cliente: Inicializando...'       
-        messenger = Messenger()            
+        print 'Cliente: Inicializando...'     
         #coord = coordinator.Coordinator(Consts.CORDINATOR_TYPE[0])
         coord = coordinator.Coordinator()
+        coord.id = self.id
+        messenger = Messenger(coord)
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
-        coord.id = self.id
         
         while(True):
             sys.stdin.readline()

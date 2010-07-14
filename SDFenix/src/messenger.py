@@ -33,6 +33,19 @@ class Messenger(object):
     resendList = [] #lista de mensagens a serem reenviadas
     send_mutex = Lock()
     resendList_mutex = Lock()
+    
+    def __init__(self, coordinator):
+        self.coordinator = coordinator
+        self.fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # bind udp port
+        self.fd.bind(('', self.port))
+        
+        multicast = Consts.GROUPS[self.coordinator.id]
+        if multicast == None:
+            raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + str(self.coordinator.id))
+        mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)                
+        self.fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         
     def stringToMessage(self, string):
         """
@@ -115,35 +128,24 @@ class Messenger(object):
         Retorna (mensagem, origem) quando a mensagem chega dentro do timeout
         E retornar um erro quando o timeout chega ao fim
         '''
-        fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                
-        # bind udp port
-        fd.bind(('', self.port))
 
         if useTimeout:
-            fd.settimeout(self.timeout)
-        
-        multicast = Consts.GROUPS[self.coordinator.id]
-        if multicast == None:
-            raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + str(self.coordinator.id))
-        mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)                
-        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                                
+            self.fd.settimeout(self.timeout)
+        else:
+            self.fd.settimeout(None)      
+                                        
         try:
-            data, addr = fd.recvfrom(1024)            
+            data, addr = self.fd.recvfrom(1024)            
         except Exception as inst:
             if useTimeout: #timeout implica reenvio
                 self.resendList_mutex.acquire()        
                 msg = self.resendList[0] #pega o primeiro da "fila"
                 self.resendList_mutex.release()
-                fd.close()
                 self.resend(msg)
                 #parar depois de N tentativas (falta implementar)
                 return self.receive(useTimeout)
             else: #saiu uma excessão e não estavamos no modo timetou
                 raise inst #sobe a excessão
-        finally:
-            fd.close()
         
         if useTimeout: #timeout implica reenvio
             self.resendList_mutex.acquire()
@@ -158,4 +160,7 @@ class Messenger(object):
     def prepare(self):
         self.next_sequence += 1
         print 'NextSequence = ' + str(self.next_sequence)
+        
+    def __del__(self):
+        self.fd.close()
         
