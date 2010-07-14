@@ -25,14 +25,14 @@ class Servidor(object):
         Inicialização de TF:
         '''        
 
-        const = Consts()           
+        #const = Consts()           
         #coord = coordinator.Coordinator(const.CORDINATOR_TYPE[2])    
         coord = coordinator.Coordinator()
         messenger = Messenger() 
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
-            coord.id = 'Server'
+        coord.id = 'Server'
         
         clientList = {}        
         while(True):            
