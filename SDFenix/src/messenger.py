@@ -106,7 +106,7 @@ class Messenger(object):
         else:
             raise Exception('destino ou mensagem são nulos')
     
-    def receive(self, timeout=False):               
+    def receive(self, useTimeout=False):               
         '''
         Retorna (mensagem, origem) quando a mensagem chega dentro do timeout
         E retornar um erro quando o timeout chega ao fim
@@ -116,34 +116,32 @@ class Messenger(object):
                 
         # bind udp port
         fd.bind(('', self.port))
-        
-        if timeout:
+
+        if useTimeout:
             fd.settimeout(self.timeout)
         
         multicast = Consts.GROUPS[self.coordinator.id]
         if multicast == None:
-            raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
-        mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)
-                
-        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                        
-        
+            raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + str(self.coordinator.id))
+        mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)                
+        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                                
         try:
             data, addr = fd.recvfrom(1024)            
         except Exception as inst:
-            if timeout: #timeout implica reenvio
+            if useTimeout: #timeout implica reenvio
                 self.resendList_mutex.acquire()        
                 msg = self.resendList[0] #pega o primeiro da "fila"
                 self.resendList_mutex.release()
                 fd.close()
                 self.resend(msg)
                 #parar depois de N tentativas (falta implementar)
-                return self.receive(timeout)
+                return self.receive(useTimeout)
             else: #saiu uma excessão e não estavamos no modo timetou
                 raise inst #sobe a excessão
         finally:
             fd.close()
         
-        if timeout: #timeout implica reenvio
+        if useTimeout: #timeout implica reenvio
             self.resendList_mutex.acquire()
             self.resendList.pop() #recebeu com sucesso, remove da lista
             self.resendList_mutex.release()
