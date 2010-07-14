@@ -52,8 +52,6 @@ class Servidor(object):
             coord.refreshState(state)
             messenger.send(client, clientList[client])
             
-
-
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print 'Parâmetros: a/p - ativo/passivo'

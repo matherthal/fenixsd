@@ -11,6 +11,7 @@ from state import State
 import exceptions
 from consts import Consts
 from threading import Timer
+from threading import Lock
 
 class Messenger(object):
     '''
@@ -27,8 +28,11 @@ class Messenger(object):
     com o Coordinator para poder obter a última sequencia recebida de um cliente. 
     '''
     port = 1905    
-    timeout = 5 #timeout em segundos
+    timeout = 1 #timeout em segundos
     next_sequence = 0
+    resendList = [] #lista de mensagens a serem reenviadas
+    send_mutex = Lock()
+    resendList_mutex = Lock()
         
     def stringToMessage(self, string):
         """
@@ -47,7 +51,7 @@ class Messenger(object):
         return str(message)
     
     def getNextSeq(self, id):
-        for state in self.coordinator._stateList:
+        for state in self.coordinator.stateList:
             if state.message.sender == id:
                 return state.message.sequence + 1
         return 0 
@@ -64,8 +68,18 @@ class Messenger(object):
         state.message = self.stringToMessage(fields[0])
         state.data = fields[1]
         
-    def resend(self):
-        print 'resend'      
+    def resend(self, msg):
+        print 'Reenviando mensagem'
+        
+        multicast = Consts.GROUPS[msg.receiver]
+        if multicast == None:
+            raise Exception('Destino desconhecido: ' + str(msg.receiver))
+        
+        self.send_mutex.acquire()
+        fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        fd.sendto(str(msg), (multicast, self.port))
+        fd.close()
+        self.send_mutex.release()
     
     def send(self, destination, message, type=Message.NORMAL_MESSAGE):
         if destination != None and message != None:          
@@ -76,13 +90,19 @@ class Messenger(object):
                           msg_type=type, \
                           data=message)            
             
+            self.resendList_mutex.acquire()
+            self.resendList.append(msg)
+            self.resendList_mutex.release()
+            
             multicast = Consts.GROUPS[destination]
             if multicast == None:
                 raise Exception('Destino desconhecido: ' + str(destination))
             
+            self.send_mutex.acquire()
             fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             fd.sendto(str(msg), (multicast, self.port))
             fd.close()
+            self.send_mutex.release()
         else:
             raise Exception('destino ou mensagem são nulos')
     
@@ -108,13 +128,26 @@ class Messenger(object):
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                        
         
         try:
-            data, addr = fd.recvfrom(1024)
-        except:
-            print 'Reenviando mensagem'
-            #send
-            #parar depois de N tentativas
-            return self.receive(self,timeout)        
-                    
+            data, addr = fd.recvfrom(1024)            
+        except Exception as inst:
+            if timeout: #timeout implica reenvio
+                self.resendList_mutex.acquire()        
+                msg = self.resendList[0] #pega o primeiro da "fila"
+                self.resendList_mutex.release()
+                fd.close()
+                self.resend(msg)
+                #parar depois de N tentativas (falta implementar)
+                return self.receive(timeout)
+            else: #saiu uma excessão e não estavamos no modo timetou
+                raise inst #sobe a excessão
+        finally:
+            fd.close()
+        
+        if timeout: #timeout implica reenvio
+            self.resendList_mutex.acquire()
+            self.resendList.pop() #recebeu com sucesso, remove da lista
+            self.resendList_mutex.release()
+        
         msg_rec = self.stringToMessage(data)        
         
         #return msg_rec.data, msg_rec.sender

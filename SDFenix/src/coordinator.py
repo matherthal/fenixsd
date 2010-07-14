@@ -24,7 +24,7 @@ class Coordinator(object):
     '''
     PASSIVE = 0
     ACTIVE = 1
-    _stateList = []
+    stateList = []
     _mode = PASSIVE #indefinido inicialmentes
     id = None #id da máquina
     state_timer = None
@@ -51,18 +51,18 @@ class Coordinator(object):
         """
         Salva o estado na lista de states
         """
-        if state.data != None:                       
+        if state.data != None:
             stateListAux = []
-            for s in self._stateList:
+            for s in self.stateList:
                 if s != None:
                     if s.message.sender != state.message.sender:
                         stateListAux.append(s)
             
-            if len(stateListAux) == len(self._stateList):
+            if len(stateListAux) == len(self.stateList):
                 print 'Estado de Cliente novo detectado'
             
             stateListAux.append(state)
-            self._stateList = stateListAux                
+            self.stateList = stateListAux
             print 'State inserido na lista'
         else:
             print 'Mensagem era um heartbeat'
@@ -113,7 +113,7 @@ class Coordinator(object):
             Para salvar o estado, temos que procurar o id do cliente correspondente.
             """
             state = None
-            for s in self._stateList:
+            for s in self.stateList:
                 if s != None:
                     if s.message.sender == message.sender:
                         state = s
