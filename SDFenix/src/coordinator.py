@@ -44,14 +44,14 @@ class Coordinator(object):
         
     def heartbeat(self):
         print 'Enviando heartbeat'   
-        self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
+        #self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
         self.setStateTimer()
     
     def refreshState(self, state):
         """
         Salva o estado na lista de states
         """
-        if state.data != None:                       
+        if state != None:                       
             stateListAux = []
             for s in self.stateList:
                 if s != None:
@@ -66,6 +66,7 @@ class Coordinator(object):
             print 'State inserido na lista'
         else:
             print 'Mensagem era um heartbeat'
+            #zerar o timer do passivo, aqui
     
     def processMessage(self, message):
         if message.msg_type == Message.STATE_MESSAGE:
@@ -77,7 +78,6 @@ class Coordinator(object):
             
             if self._mode == self.ACTIVE: 
                 print 'Ignorando salvamento de estado'
-                print 'Voltando para o receive'
                 return self.messenger.receive()
             
             state = self.messenger.stringToState(message.data)
@@ -86,7 +86,7 @@ class Coordinator(object):
             """
             Envia msg de ACK
             """
-            print 'Enviando ACK para a máquina passiva' #mas esta eh a passiva!!
+            print 'Enviando ACK para a máquina ativa'
             #message = Message(sender=self.id, \
             #      receiver=Consts.GROUPS[self.id],\
             #      sequence=0, \
@@ -94,16 +94,19 @@ class Coordinator(object):
             #      data=None)
             self.messenger.send(self.id, str(None),Message.ACK_MESSAGE)
             
+            return self.messenger.receive() #volta a escutar
+            
         elif message.msg_type == Message.NORMAL_MESSAGE:
             """
             A máquina ativa ou passiva receberam uma mensagem
-            """            
+            """
+            print 'Processando mensagem NORMAL'            
+            
             if self._mode == self.PASSIVE:                
                 #A máquina passiva recebe mensagens, mas as ignora.
-                print 'Servidor backup: ignorando mensagem do tipo normal'                        
-                return
+                print 'Ignorando mensagem'                        
+                return self.messenger.receive() #volta a escutar
             
-            print "Mensagem do tipo normal =)"
             """            
             Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
             o envio de um State nulo.
@@ -121,20 +124,22 @@ class Coordinator(object):
                         break
                     
             """
+            Devemos salvar o estado agora, antes de processar.
             Monta e envia a mensagem de STATE, para a máquina passiva.
-            """    
-            '''        
-            message = Message(sender=self.id, \
+            """            
+                    
+            msg = Message(sender=self.id, \
                   receiver=Consts.GROUPS[self.id],\
                   sequence=message.sequence, \
                   msg_type=Message.STATE_MESSAGE, \
                   data=str(state))
 
-            self.messenger.send(self.id, message)
-            '''
+            self.messenger.send(self.id, msg)
+            
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'          
-            
+            #zerar contador do reenvio do principal
+            return self.messenger.receive() #volta a escutar
         else:    
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
         

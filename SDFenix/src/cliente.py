@@ -38,6 +38,7 @@ class Cliente(object):
         coord.id = self.id
         
         while(True):
+            sys.stdin.readline()
             print 'Cliente: enviando requisição'
             message = str(5)
             """
@@ -50,8 +51,7 @@ class Cliente(object):
             state.data = message
             coord.refreshState(state)
             """
-            messenger.prepare()
-            sys.stdin.readline()
+            messenger.prepare()            
             messenger.send(self.serverID, message)         
             
             print 'Cliente: esperando resposta...'
@@ -59,7 +59,7 @@ class Cliente(object):
             resp, id = message.data, message.sender
             print 'Cliente: resposta = ' + str(resp) + ' ' + str(id) 
             #time.sleep(int(random.random() * 5 + 1)) #espera de 1 a 5 segundos
-            time.sleep(int(random.random() + 1)) #espera de 1 a 5 segundos
+            #time.sleep(int(random.random() + 1)) #espera de 1 a 5 segundos
             
 
 if __name__ == '__main__':

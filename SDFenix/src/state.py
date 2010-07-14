@@ -15,7 +15,6 @@ class State(object):
     comunicação e o último número de sequência recebido (last_sequence).
     '''
 
-
     def __init__(self):
         '''
         Constructor

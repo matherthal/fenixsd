@@ -28,7 +28,7 @@ class Messenger(object):
     com o Coordinator para poder obter a última sequencia recebida de um cliente. 
     '''
     port = 1905    
-    timeout = 1 #timeout em segundos
+    timeout = 5 #timeout em segundos
     next_sequence = 0
     resendList = [] #lista de mensagens a serem reenviadas
     send_mutex = Lock()
@@ -60,13 +60,16 @@ class Messenger(object):
         """
         Campos do state:
         Message Data
-        """
+        """        
         
-        fields = string.split()
+        if string == "None":
+            return None
         
+        fields = string.split()        
         state = State()
         state.message = self.stringToMessage(fields[0])
         state.data = fields[1]
+        return State
         
     def resend(self, msg):
         print 'Reenviando mensagem'
@@ -90,9 +93,10 @@ class Messenger(object):
                           msg_type=type, \
                           data=message)            
             
-            self.resendList_mutex.acquire()
-            self.resendList.append(msg)
-            self.resendList_mutex.release()
+            if type == Message.NORMAL_MESSAGE: #o reenvio eh somente para msgs normais
+                self.resendList_mutex.acquire()
+                self.resendList.append(msg)
+                self.resendList_mutex.release()
             
             multicast = Consts.GROUPS[destination]
             if multicast == None:
