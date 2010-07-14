@@ -117,6 +117,17 @@ class Coordinator(object):
                 print 'Ignorando mensagem'                        
                 return self.messenger.receive() #volta a escutar
             
+            "tratamento de duplicatas"
+            state = None
+            for st in self.stateList:
+                if st != None:
+                    if st.message.sender == message.sender:
+                        if st.message.sequence == message.sequence: #duplicada encontrada
+                            self.messenger.resend(st.message)
+                            return self.messenger.receive()
+                        break
+                         
+            
             """            
             Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
             o envio de um State nulo.
