@@ -27,30 +27,41 @@ class Coordinator(object):
     stateList = []
     _mode = PASSIVE #indefinido inicialmentes
     id = None #id da máquina
-    state_timer = None
+    active_timer = None
+    passive_timer = None
         
     def setActive(self):
         self._mode = self.ACTIVE
-        self.setStateTimer()
+        self.setActiveTimer()
         
-    def setStateTimer(self):
-        if self.state_timer != None: 
-            self.state_timer.cancel()
-        self.state_timer = Timer(Consts.TIMEOUT_STATE,self.heartbeat)
-        self.state_timer.start()
+    def setActiveTimer(self):
+        if self.active_timer != None: 
+            self.active_timer.cancel()
+        self.active_timer = Timer(Consts.TIMEOUT_ACTIVE,self.heartbeat)
+        self.active_timer.start()
+        
+    def setPassiveTimer(self):
+        if self.passive_timer != None: 
+            self.passive_timer.cancel()
+        self.passive_timer = Timer(Consts.TIMEOUT_PASSIVE,self.assumeControl)
+        self.passive_timer.start()
         
     def setPassive(self):
         self._mode = self.PASSIVE
-        
+        self.setPassiveTimer()
+    
+    def assumeControl(self):
+        print 'Assumindo o controle!'
+        self.passive_timer.cancel()
+        #self.setActive()
+    
     def heartbeat(self):
         print 'Enviando heartbeat'   
         self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
-        self.setStateTimer()
+        self.setActiveTimer()
     
     def refreshState(self, state):
-        """
-        Salva o estado na lista de states
-        """
+        "Salva o estado na lista de states"
         if state != None:                       
             stateListAux = []
             for s in self.stateList:
@@ -84,12 +95,9 @@ class Coordinator(object):
             state = self.messenger.stringToState(message.data)
             self.refreshState(state)
             
-            #DEBUG
-            print '    LISTA DE ESTADOS'
-            i = 0
-            for s in self.stateList:
-                print '       ' + str(i) + ' - ' + str(s)
-            #
+            #Reinicia o contador para assumir o controle:
+            self.setPassiveTimer()            
+            
             """
             Envia msg de ACK
             """
@@ -109,6 +117,12 @@ class Coordinator(object):
                 print 'Ignorando mensagem'                        
                 return self.messenger.receive() #volta a escutar
             
+            """            
+            Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
+            o envio de um State nulo.
+            """      
+            self.setActiveTimer()
+            
             """
             Para salvar o estado, temos que procurar o id do cliente correspondente.
             """
@@ -127,23 +141,15 @@ class Coordinator(object):
                 self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)
                 #esperar o ACK aqui?
             
-            """            
-            Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
-            o envio de um State nulo.
-            """      
-            self.setStateTimer()
-            
-            #DEBUG
-            print '    LISTA DE ESTADOS'
-            i = 0
-            for s in self.stateList:
-                print '       ' + str(i) + ' - ' + str(s)
-            #
-            
         elif message.msg_type == Message.ACK_MESSAGE:
-            print 'Processando uma mensagem ACK'          
-            #zerar contador do reenvio do principal
-            #acho q é isso: self.setStateTimer()
+            print 'Processando uma mensagem ACK'
+            
+            if self._mode == self.ACTIVE:
+                print 'Ignorando ACK enviado'
+            else:
+                #zerar contador do reenvio do principal
+                pass
+                            
             return self.messenger.receive() #volta a escutar
         else:    
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)

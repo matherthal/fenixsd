@@ -36,6 +36,8 @@ class Cliente(object):
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
+        else:
+            coord.setPassive()
         
         while(True):
             sys.stdin.readline()

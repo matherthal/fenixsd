@@ -148,7 +148,7 @@ class Messenger(object):
                 self.resend(msg)
                 #parar depois de N tentativas (falta implementar)
                 return self.receive(useTimeout)
-            else: #saiu uma excessão e não estavamos no modo timetou
+            else: #saiu uma excessão e não estavamos no modo timeout
                 raise inst #sobe a excessão
         
         if useTimeout: #timeout implica reenvio
