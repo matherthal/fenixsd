@@ -32,7 +32,7 @@ class Cliente(object):
         #coord = coordinator.Coordinator(Consts.CORDINATOR_TYPE[0])
         coord = coordinator.Coordinator()
         coord.id = self.id
-        messenger = Messenger(coord)
+        messenger = Messenger()
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()

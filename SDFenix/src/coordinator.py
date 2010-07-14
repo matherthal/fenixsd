@@ -61,7 +61,9 @@ class Coordinator(object):
         self.setActiveTimer()
     
     def refreshState(self, state):
-        "Salva o estado na lista de states"
+        """
+        Salva o estado na lista de states
+        """
         if state != None:                       
             stateListAux = []
             for s in self.stateList:
@@ -73,7 +75,8 @@ class Coordinator(object):
                 print 'Estado de Cliente novo detectado'
             
             stateListAux.append(state)
-            self.stateList = stateListAux
+            self.stateList = stateListAux                
+            print 'State inserido na lista'
         else:
             print 'Mensagem era um heartbeat'
         #zerar o timer do passivo, aqui
@@ -138,11 +141,10 @@ class Coordinator(object):
                 Devemos enviar o estado mais atual do cliente agora, antes de processar.            
                 """
                 print 'Enviando State: ' + str(state)
-                import sys
-                sys.stdin.readline()
                 self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)
                 
                 #esperar o ACK aqui?
+            
             
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'
@@ -152,10 +154,10 @@ class Coordinator(object):
             else:
                 #zerar contador do reenvio do principal
                 pass
-                            
+            
             return self.messenger.receive() #volta a escutar
         else:    
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
         
         return message
-
+    

@@ -26,7 +26,7 @@ class Servidor(object):
         '''        
         coord = coordinator.Coordinator()
         coord.id = 'Server'
-        messenger = Messenger(coord) 
+        messenger = Messenger() 
         coordinator.init_FenixSD(messenger, coord)
         if not self.isPassive:
             coord.setActive()
