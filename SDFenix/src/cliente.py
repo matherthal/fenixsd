@@ -51,6 +51,7 @@ class Cliente(object):
             coord.refreshState(state)
             """
             messenger.prepare()
+            sys.stdin.readline()
             messenger.send(self.serverID, message)         
             
             print 'Cliente: esperando resposta...'
