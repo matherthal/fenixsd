@@ -42,8 +42,10 @@ class Coordinator(object):
     def setPassive(self):
         self._mode = self.PASSIVE
         
-    def heartbeat(self):        
+    def heartbeat(self):
+        print 'Enviando heartbeat'   
         self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
+        self.setStateTimer()
     
     def refreshState(self, state):
         """

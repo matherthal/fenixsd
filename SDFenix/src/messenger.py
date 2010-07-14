@@ -74,8 +74,7 @@ class Messenger(object):
                           receiver=destination,\
                           sequence=self.next_sequence, \
                           msg_type=type, \
-                          data=message)
-            
+                          data=message)            
             
             multicast = Consts.GROUPS[destination]
             if multicast == None:
@@ -87,7 +86,7 @@ class Messenger(object):
         else:
             raise Exception('destino ou mensagem são nulos')
     
-    def receive(self):               
+    def receive(self, timeout=False):               
         '''
         Retorna (mensagem, origem) quando a mensagem chega dentro do timeout
         E retornar um erro quando o timeout chega ao fim
@@ -98,6 +97,9 @@ class Messenger(object):
         # bind udp port
         fd.bind(('', self.port))
         
+        if timeout:
+            fd.settimeout(self.timeout)
+        
         multicast = Consts.GROUPS[self.coordinator.id]
         if multicast == None:
             raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + self.coordinator.id)
@@ -105,10 +107,15 @@ class Messenger(object):
                 
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                        
         
-        data, addr = fd.recvfrom(1024)        
+        try:
+            data, addr = fd.recvfrom(1024)
+        except:
+            print 'Reenviando mensagem'
+            #send
+            #parar depois de N tentativas
+            return self.receive(self,timeout)        
                     
-        msg_rec = self.stringToMessage(data)
-        
+        msg_rec = self.stringToMessage(data)        
         
         #return msg_rec.data, msg_rec.sender
         return self.coordinator.processMessage(msg_rec)           
