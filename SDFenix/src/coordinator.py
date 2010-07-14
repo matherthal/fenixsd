@@ -35,7 +35,7 @@ class Coordinator(object):
         
     def setActive(self):
         self._mode = self.ACTIVE
-        self.setStateTimer()
+        #self.setStateTimer()
         
     def setStateTimer(self):
         if self.state_timer != None: 
@@ -62,7 +62,7 @@ class Coordinator(object):
             stateListAux = []
             for s in self._stateList:
                 if s != None:
-                    if s.id != state.id:
+                    if s.message.sender != state.message.sender:
                         stateListAux.append(s)
             
             if len(stateListAux) == len(self._stateList):
@@ -121,13 +121,14 @@ class Coordinator(object):
             state = None
             for s in self._stateList:
                 if s != None:
-                    if s.id == message.sender:
+                    if s.message.sender == message.sender:
                         state = s
                         break
                     
             """
             Monta e envia a mensagem de STATE, para a máquina passiva.
-            """            
+            """    
+            '''        
             message = Message(sender=self.id, \
                   receiver=Consts.GROUPS[self.id],\
                   sequence=message.sequence, \
@@ -135,7 +136,7 @@ class Coordinator(object):
                   data=str(state))
 
             self.messenger.send(self.id, message)
-            
+            '''
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'          
             
