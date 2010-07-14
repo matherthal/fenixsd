@@ -44,7 +44,7 @@ class Coordinator(object):
         
     def heartbeat(self):
         print 'Enviando heartbeat'   
-        #self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
+        self.messenger.send(self.id, str(None),Message.STATE_MESSAGE)
         self.setStateTimer()
     
     def refreshState(self, state):
@@ -128,13 +128,15 @@ class Coordinator(object):
             Monta e envia a mensagem de STATE, para a máquina passiva.
             """            
                     
-            msg = Message(sender=self.id, \
+            """msg = Message(sender=self.id, \
                   receiver=Consts.GROUPS[self.id],\
                   sequence=message.sequence, \
                   msg_type=Message.STATE_MESSAGE, \
                   data=str(state))
-
+            
             self.messenger.send(self.id, msg)
+            """
+            
             
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'          
