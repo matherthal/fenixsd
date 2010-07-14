@@ -62,11 +62,11 @@ class Coordinator(object):
                 print 'Estado de Cliente novo detectado'
             
             stateListAux.append(state)
-            self.stateList = stateListAux                
-            print 'State inserido na lista'
+            self.stateList = stateListAux
         else:
             print 'Mensagem era um heartbeat'
-            #zerar o timer do passivo, aqui
+        #zerar o timer do passivo, aqui
+    
     
     def processMessage(self, message):
         if message.msg_type == Message.STATE_MESSAGE:
@@ -80,6 +80,7 @@ class Coordinator(object):
                 print 'Ignorando salvamento de estado'
                 return self.messenger.receive()
             
+            print 'Recebido msg: ' + str(message)
             state = self.messenger.stringToState(message.data)
             self.refreshState(state)
             
@@ -87,11 +88,6 @@ class Coordinator(object):
             Envia msg de ACK
             """
             print 'Enviando ACK para a máquina ativa'
-            #message = Message(sender=self.id, \
-            #      receiver=Consts.GROUPS[self.id],\
-            #      sequence=0, \
-            #      msg_type=Message.ACK_MESSAGE, \
-            #      data=None)
             self.messenger.send(self.id, str(None),Message.ACK_MESSAGE)
             
             return self.messenger.receive() #volta a escutar
@@ -121,22 +117,15 @@ class Coordinator(object):
                 if s != None:
                     if s.message.sender == message.sender:
                         state = s
-                        break
-                    
-            """
-            Devemos salvar o estado agora, antes de processar.
-            Monta e envia a mensagem de STATE, para a máquina passiva.
-            """            
-                    
-            """msg = Message(sender=self.id, \
-                  receiver=Consts.GROUPS[self.id],\
-                  sequence=message.sequence, \
-                  msg_type=Message.STATE_MESSAGE, \
-                  data=str(state))
+                        break            
             
-            self.messenger.send(self.id, msg)
-            """
-            
+            if state != None:
+                """
+                Devemos enviar o estado mais atual do cliente agora, antes de processar.            
+                """
+                print 'Enviando State: ' + str(state)
+                self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)
+                #esperar o ACK aqui?
             
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'          
@@ -146,3 +135,4 @@ class Coordinator(object):
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
         
         return message
+

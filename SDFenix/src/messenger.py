@@ -85,13 +85,13 @@ class Messenger(object):
         self.send_mutex.release()
     
     def send(self, destination, message, type=Message.NORMAL_MESSAGE):
-        if destination != None and message != None:          
+        if destination != None and message != None:  
             
             msg = Message(sender=self.coordinator.id, \
                           receiver=destination,\
                           sequence=self.next_sequence, \
                           msg_type=type, \
-                          data=message)            
+                          data=message)   
             
             if type == Message.NORMAL_MESSAGE: #o reenvio eh somente para msgs normais
                 self.resendList_mutex.acquire()
