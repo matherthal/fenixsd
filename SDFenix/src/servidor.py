@@ -48,9 +48,10 @@ class Servidor(object):
             print 'Servidor: enviando resposta para ' + str(client)
             state = State()
             state.message = message
-            state.data = clientList[client] 
+            state.data = clientList[client]
+            print 'Servidor: salvando estado: ' + str(state)
             coord.refreshState(state)
-            messenger.send(client, clientList[client])
+            messenger.send(client, str(clientList[client]))
             
 if __name__ == '__main__':
     if len(sys.argv) < 2:
