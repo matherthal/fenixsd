@@ -5,8 +5,6 @@ Created on 11/07/2010
 @author: Rondon
 '''
 
-from message import Message
-
 class State(object):
     '''
     Classe que mantém o estado entre a máquina em questão e uma outra. 
