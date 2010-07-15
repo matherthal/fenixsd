@@ -93,7 +93,6 @@ class Coordinator(object):
         if message.receiver != self.id:
             print 'Msg não era para mim!'
             return self.messenger.receive(useTimeout)
-                
         if message.msg_type == Message.STATE_MESSAGE:
             """
             A maquina passiva recebe um estado.
@@ -106,14 +105,14 @@ class Coordinator(object):
                 return self.messenger.receive(useTimeout)
             
             print 'Recebido msg: ' + str(message)
-            if message.data == 'None' or int(message.data) == 0: # As vezes retorna o heartbeat como 0 ou como None
+            if message.data == 'None': # As vezes retorna o heartbeat como 0 ou como None
                 print 'Recebido heartbeat'
             else:
                 state = self.messenger.stringToState(message.data)
                 self.refreshState(state)
             
             #Reinicia o contador para assumir o controle:
-            self.setPassiveTimer()            
+            self.setPassiveTimer()
             
             print '    LISTA DE ESTADOS'
             for stt in self.stateList:
@@ -143,7 +142,11 @@ class Coordinator(object):
             o envio de um State nulo.
             """
             if self.id == Consts.SERVER_NAME:
-                self.setActiveTimer()            
+                self.setActiveTimer()
+                print '    LISTA DE ESTADOS'
+                for stt in self.stateList:
+                    print '       ' + str(stt)
+                                
                 """
                 Para salvar o estado, temos que procurar o id do cliente correspondente.
                 """
@@ -153,17 +156,24 @@ class Coordinator(object):
                         if s.message.sender == message.sender:
                             state = s
                             break
-                
-                if state != None:
-                    """
-                    Devemos enviar o estado mais atual do cliente agora, antes de processar.            
-                    """
-                    print '    LISTA DE ESTADOS'
-                    for stt in self.stateList:
-                        print '       ' + str(stt)
-                    print 'Enviando State: ' + str(state)
-                    self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)                    
-                    #esperar o ACK aqui?
+                                        
+                if state == None: #Se não tiver nenhum estado na lista, criar o primeiro
+                    state = State()  
+                    state.message = Message(sender=self.id, \
+                        receiver=Consts.SERVER_NAME, \
+                        sequence=-1, \
+                        msg_type=Message.STATE_MESSAGE, \
+                        data='0')
+                    state.data = '0'                    
+                    self.refreshState(state)
+                    print 'Servidor: criando estado inicial: ' + str(state)                  
+                """
+                Devemos enviar o estado mais atual do cliente agora, antes de processar.            
+                """
+                print 'Enviando State: ' + str(state)                                        
+                #self.messenger.send(self.id, str(state),Message.STATE_MESSAGE)                    
+                self.messenger.send(self.id, '0 Matheus Server 2 5 11', Message.STATE_MESSAGE)
+                #esperar o ACK aqui?
             
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'            

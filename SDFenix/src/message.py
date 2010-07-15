@@ -17,7 +17,7 @@ class Message(object):
     STATE_MESSAGE = 1  #a mensagem carrega um State em data
     ACK_MESSAGE = 2 #mensagem de confirmação de recebimento de um State vindo do servidor Principal para o Secundário
     
-    def __init__(self, sender, receiver, sequence, msg_type, data):
+    def __init__(self, sender='', receiver='', sequence=-1, msg_type=-1, data=''):
         '''
         Constructor
         '''

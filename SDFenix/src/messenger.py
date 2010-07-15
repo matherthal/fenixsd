@@ -85,14 +85,15 @@ class Messenger(object):
         fd.close()
         self.send_mutex.release()
     
-    def send(self, destination, message, type=Message.NORMAL_MESSAGE):
+    def send(self, destination, message, msg_type=Message.NORMAL_MESSAGE):
         if destination != None and message != None:          
             
-            msg = Message(sender=self.coordinator.id, \
-                          receiver=destination,\
-                          sequence=self.next_sequence, \
-                          msg_type=type, \
-                          data=message)            
+            #msg = Message(sender=self.coordinator.id, \
+            #              receiver=destination,\
+            #              sequence=self.next_sequence, \
+            #              msg_type=type, \
+            #              data=message)            
+            msg = Message(self.coordinator.id, destination, self.next_sequence, msg_type, message)
             
             if type == Message.NORMAL_MESSAGE: #o reenvio eh somente para msgs normais
                 self.resendList_mutex.acquire()
@@ -135,6 +136,7 @@ class Messenger(object):
             if useTimeout: #timeout implica reenvio
                 self.resendList_mutex.acquire()        
                 msg = self.resendList[0] #pega o primeiro da "fila"
+                ####O pop q tem ali abaixo, não pode ser feito aqui em cima não?###
                 self.resendList_mutex.release()
                 fd.close()
                 self.resend(msg)
@@ -145,10 +147,12 @@ class Messenger(object):
         finally:
             fd.close()
         
+        '''        
         if useTimeout: #timeout implica reenvio
             self.resendList_mutex.acquire()
             self.resendList.pop() #recebeu com sucesso, remove da lista
             self.resendList_mutex.release()
+        '''
         
         msg_rec = self.stringToMessage(data)
         
