@@ -55,9 +55,11 @@ class Coordinator(object):
         self.setPassiveTimer()
     
     def assumeControl(self):
-        print 'Assumindo o controle!'
+        print '|--------------------------|'
+        print '|   Assumindo o controle!  |'
+        print '|--------------------------|'
         self.passive_timer.cancel()        
-        #self.setActive()
+        self.setActive()
     
     def heartbeat(self):
         print 'Enviando heartbeat'
@@ -104,14 +106,18 @@ class Coordinator(object):
                 return self.messenger.receive(useTimeout)
             
             print 'Recebido msg: ' + str(message)
-            
-            
-            
-            state = self.messenger.stringToState(message.data)
-            self.refreshState(state)
+            if message.data == 'None' or int(message.data) == 0: # As vezes retorna o heartbeat como 0 ou como None
+                print 'Recebido heartbeat'
+            else:
+                state = self.messenger.stringToState(message.data)
+                self.refreshState(state)
             
             #Reinicia o contador para assumir o controle:
             self.setPassiveTimer()            
+            
+            print '    LISTA DE ESTADOS'
+            for stt in self.stateList:
+                print '       ' + str(stt)
             
             """
             Envia msg de ACK
@@ -152,9 +158,12 @@ class Coordinator(object):
                     """
                     Devemos enviar o estado mais atual do cliente agora, antes de processar.            
                     """
+                    print '    LISTA DE ESTADOS'
+                    for stt in self.stateList:
+                        print '       ' + str(stt)
                     print 'Enviando State: ' + str(state)
                     self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)                    
-                    #esperar o ACK aqui?            
+                    #esperar o ACK aqui?
             
         elif message.msg_type == Message.ACK_MESSAGE:
             print 'Processando uma mensagem ACK'            
