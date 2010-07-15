@@ -33,7 +33,8 @@ class Coordinator(object):
         
     def setActive(self):
         self._mode = self.ACTIVE
-        self.setActiveTimer()
+        if self.id == Consts.SERVER_NAME:
+            self.setActiveTimer()
         
     def setActiveTimer(self):
         if self.active_timer != None: 
@@ -103,9 +104,6 @@ class Coordinator(object):
                 return self.messenger.receive()
             
             print 'Recebido msg: ' + str(message)
-            
-            
-            
             state = self.messenger.stringToState(message.data)
             self.refreshState(state)
             
@@ -129,43 +127,38 @@ class Coordinator(object):
             if self._mode == self.PASSIVE:                
                 #A máquina passiva recebe mensagens, mas as ignora.
                 print 'Ignorando mensagem'                        
-                return self.messenger.receive() #volta a escutar
-            
+                return self.messenger.receive() #volta a escutar            
             """            
             Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
             o envio de um State nulo.
             """
-            self.setActiveTimer()
-            
-            """
-            Para salvar o estado, temos que procurar o id do cliente correspondente.
-            """
-            state = None
-            for s in self.stateList:
-                if s != None:
-                    if s.message.sender == message.sender:
-                        state = s
-                        break
-            
-            if state != None:
+            if self.id == Consts.SERVER_NAME:
+                self.setActiveTimer()            
                 """
-                Devemos enviar o estado mais atual do cliente agora, antes de processar.            
+                Para salvar o estado, temos que procurar o id do cliente correspondente.
                 """
-                print 'Enviando State: ' + str(state)
-                self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)
+                state = None
+                for s in self.stateList:
+                    if s != None:
+                        if s.message.sender == message.sender:
+                            state = s
+                            break
                 
-                #esperar o ACK aqui?
-            
+                if state != None:
+                    """
+                    Devemos enviar o estado mais atual do cliente agora, antes de processar.            
+                    """
+                    print 'Enviando State: ' + str(state)
+                    self.messenger.send(self.id, str(state),type=Message.STATE_MESSAGE)                    
+                    #esperar o ACK aqui?            
             
         elif message.msg_type == Message.ACK_MESSAGE:
-            print 'Processando uma mensagem ACK'
-            
+            print 'Processando uma mensagem ACK'            
             if self._mode == self.ACTIVE:
                 print 'Ignorando ACK enviado'
             else:
                 #zerar contador do reenvio do principal
-                pass
-            
+                pass            
             return self.messenger.receive() #volta a escutar
         else:    
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
