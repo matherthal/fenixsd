@@ -9,3 +9,4 @@ class Consts(object):
               'Matheus':'226.0.0.5','Carlos':'226.0.0.6','Server':'225.0.0.1'}
     TIMEOUT_ACTIVE = 5
     TIMEOUT_PASSIVE = 15
+    SERVER_NAME = 'Server'
