@@ -5,6 +5,8 @@ Created on 11/07/2010
 @author: Rondon
 '''
 
+from message import Message
+
 class State(object):
     '''
     Classe que mantém o estado entre a máquina em questão e uma outra. 
@@ -17,8 +19,11 @@ class State(object):
         '''
         Constructor
         '''
-        self.message = None
+        self.message = Message(None,None,-1,-1,None)
         self.data = None
     
     def __str__(self):
         return str(self.message) + ' ' + str(self.data)
+    
+    def isEmpty(self):
+        return self.message.isEmpty() and (self.data == 'None')

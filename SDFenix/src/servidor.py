@@ -34,22 +34,32 @@ class Servidor(object):
             coord.setPassive()        
         
         clientList = {}        
-        while(True):            
-            print 'Servidor: esperando requisições...'                        
+        while(True):   
+            print 'Esperando requisições...'                        
             message = messenger.receive()
+            #print 'Servidor: recebi: ' + str(message)
             data, client = message.data, message.sender
-            if not (client in clientList):
-                print 'Servidor: novo cliente'
-                clientList[client] = 0 #cria o cliente
             
-            print 'Servidor: processando requisição'
-            clientList[client] += int(data)            
+            clientList = coord.stateListToClientList()
+            #print 'Servidor: retornou o clientList: ' + str(clientList)
+            
+            if not (client in clientList):
+                #print 'Servidor: novo cliente'
+                clientList[client] = 0 #cria o cliente
+                
+            print 'Processando requisição do cliente '+ str(client)
+            clientList[client] += int(data)   
+            
             state = State()
-            state.message = message
+            state.message = message                     
             state.data = clientList[client]
-            print 'Servidor: salvando estado: ' + str(state)
+            #print 'Servidor: state: ' + str(state)
+            
             coord.refreshState(state)
-            print 'Servidor: enviando resposta para ' + str(client)
+            print 'Salvando estado do cliente: ' + str(state.message.sender) + '    acumulador = ' + str(state.data)
+            coord.sendState(message)
+    
+            print 'Enviando resposta para ' + str(client)
             messenger.send(client, str(clientList[client]))
             
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ class Messenger(object):
     com o Coordinator para poder obter a última sequencia recebida de um cliente. 
     '''
     port = 1905    
-    timeout = 5 #timeout em segundos
+    timeout = 20 #timeout em segundos
     next_sequence = 0
     resendList = [] #lista de mensagens a serem reenviadas
     send_mutex = Lock()
@@ -39,13 +39,19 @@ class Messenger(object):
         Campos da mensagem:
         Type Sender Receiver Sequence Data
         """ 
-        fields = string.split() 
+        fields = string.split()
+        data = ''
         
+        for i in range(4,len(fields)-1):
+            data += fields[i] + ' '
+        data += fields[len(fields)-1]
+        
+        #print 'data = ' + str(data) 
         return Message(sender=fields[1], \
                       receiver=fields[2], \
                       sequence=int(fields[3]), \
                       msg_type=int(fields[0]), \
-                      data=fields[4])
+                      data=data)
         
     def messageToString(self, message):
         return str(message)
@@ -68,8 +74,14 @@ class Messenger(object):
             raise Exception('Impossivel converter para State: ' + string)
                 
         state = State()
-        state.message = self.stringToMessage(string)
-        state.data = fields[6]
+        #print 'foi passado: ' + string
+        msg = Message(sender=fields[1], \
+                      receiver=fields[2], \
+                      sequence=int(fields[3]), \
+                      msg_type=int(fields[0]), \
+                      data=fields[4])
+        state.message = msg
+        state.data = fields[5]
         return state
         
     def resend(self, msg):
@@ -85,15 +97,17 @@ class Messenger(object):
         fd.close()
         self.send_mutex.release()
     
-    def send(self, destination, message, msg_type=Message.NORMAL_MESSAGE):
+    def send(self, destination, message, type=Message.NORMAL_MESSAGE):
         if destination != None and message != None:          
             
-            #msg = Message(sender=self.coordinator.id, \
-            #              receiver=destination,\
-            #              sequence=self.next_sequence, \
-            #              msg_type=type, \
-            #              data=message)            
-            msg = Message(self.coordinator.id, destination, self.next_sequence, msg_type, message)
+           #print 'para:' + destination + ' msg: ' + message
+            
+            msg = Message(sender=self.coordinator.id, \
+                          receiver=destination,\
+                          sequence=self.next_sequence, \
+                          msg_type=type, \
+                          data=message)
+            #print 'Msg resultante:' + str(msg)  
             
             if type == Message.NORMAL_MESSAGE: #o reenvio eh somente para msgs normais
                 self.resendList_mutex.acquire()
@@ -111,6 +125,34 @@ class Messenger(object):
             self.send_mutex.release()
         else:
             raise Exception('destino ou mensagem são nulos')
+    
+    def receiveAck(self):
+        fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        
+        fd.settimeout(self.timeout)
+        
+        multicast = Consts.GROUPS[self.coordinator.id]
+        if multicast == None:
+            raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + str(self.coordinator.id))
+        # bind udp port
+        fd.bind((multicast, self.port))
+        mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)                
+        fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                                
+        try:
+            data, addr = fd.recvfrom(4096)
+            #print 'Dados recebidos: ' + data
+        except Exception as inst:
+            return self.receiveAck()
+        finally:
+            fd.close()         
+        msg_rec = self.stringToMessage(data)
+        
+        if not msg_rec.msg_type == Message.STATE_MESSAGE:
+            return self.receiveAck()
+        else:
+            return #sai do receiveAck
     
     def receive(self, useTimeout=False):               
         '''
@@ -131,12 +173,12 @@ class Messenger(object):
         mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)                
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                                
         try:
-            data, addr = fd.recvfrom(1024)            
+            data, addr = fd.recvfrom(4096)
+            #print 'Dados recebidos: ' + data
         except Exception as inst:
             if useTimeout: #timeout implica reenvio
                 self.resendList_mutex.acquire()        
                 msg = self.resendList[0] #pega o primeiro da "fila"
-                ####O pop q tem ali abaixo, não pode ser feito aqui em cima não?###
                 self.resendList_mutex.release()
                 fd.close()
                 self.resend(msg)
@@ -147,19 +189,18 @@ class Messenger(object):
         finally:
             fd.close()
         
-        '''        
         if useTimeout: #timeout implica reenvio
             self.resendList_mutex.acquire()
             self.resendList.pop() #recebeu com sucesso, remove da lista
             self.resendList_mutex.release()
-        '''
-        
+            
         msg_rec = self.stringToMessage(data)
+        #print 'Msg a ser processada: ' + str(msg_rec)
         
         #return msg_rec.data, msg_rec.sender
-        return self.coordinator.processMessage(msg_rec,useTimeout)           
+        return self.coordinator.processMessage(msg_rec)           
             
     def prepare(self):
         self.next_sequence += 1
-        print 'NextSequence = ' + str(self.next_sequence)
+        #print 'NextSequence = ' + str(self.next_sequence)
         

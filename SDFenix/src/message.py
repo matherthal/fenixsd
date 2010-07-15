@@ -5,8 +5,6 @@ Created on 11/07/2010
 @author: Rondon
 '''
 
-from state import State
-
 class Message(object):
     '''
     classdocs
@@ -17,7 +15,7 @@ class Message(object):
     STATE_MESSAGE = 1  #a mensagem carrega um State em data
     ACK_MESSAGE = 2 #mensagem de confirmação de recebimento de um State vindo do servidor Principal para o Secundário
     
-    def __init__(self, sender='', receiver='', sequence=-1, msg_type=-1, data=''):
+    def __init__(self, sender, receiver, sequence, msg_type, data):
         '''
         Constructor
         '''
@@ -29,3 +27,7 @@ class Message(object):
         
     def __str__(self):
         return str(self.msg_type) + ' ' + str(self.sender) + ' ' + str(self.receiver) + ' ' + str(self.sequence) + ' ' + str(self.data)
+    
+    def isEmpty(self):
+        return (self.sender == 'None') and (self.receiver == 'None') and (self.sequence < 0) \
+                and (self.msg_type < 0) and (self.data == 'None')
