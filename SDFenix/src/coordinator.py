@@ -87,10 +87,10 @@ class Coordinator(object):
         #zerar o timer do passivo, aqui
     
     
-    def processMessage(self, message):
+    def processMessage(self, message, useTimeout):
         if message.receiver != self.id:
             print 'Msg não era para mim!'
-            return self.messenger.receive()
+            return self.messenger.receive(useTimeout)
                 
         if message.msg_type == Message.STATE_MESSAGE:
             """
@@ -101,9 +101,12 @@ class Coordinator(object):
             
             if self._mode == self.ACTIVE: 
                 print 'Ignorando salvamento de estado'
-                return self.messenger.receive()
+                return self.messenger.receive(useTimeout)
             
             print 'Recebido msg: ' + str(message)
+            
+            
+            
             state = self.messenger.stringToState(message.data)
             self.refreshState(state)
             
@@ -116,7 +119,7 @@ class Coordinator(object):
             print 'Enviando ACK para a máquina ativa'
             self.messenger.send(self.id, str(None),Message.ACK_MESSAGE)
             
-            return self.messenger.receive() #volta a escutar
+            return self.messenger.receive(useTimeout) #volta a escutar
             
         elif message.msg_type == Message.NORMAL_MESSAGE:
             """
@@ -127,7 +130,8 @@ class Coordinator(object):
             if self._mode == self.PASSIVE:                
                 #A máquina passiva recebe mensagens, mas as ignora.
                 print 'Ignorando mensagem'                        
-                return self.messenger.receive() #volta a escutar            
+                return self.messenger.receive(useTimeout) #volta a escutar
+            
             """            
             Como vamos salvar o estado, logo em seguida, resetamos o timer para evitar
             o envio de um State nulo.
@@ -158,8 +162,9 @@ class Coordinator(object):
                 print 'Ignorando ACK enviado'
             else:
                 #zerar contador do reenvio do principal
-                pass            
-            return self.messenger.receive() #volta a escutar
+                pass
+            
+            return self.messenger.receive(useTimeout) #volta a escutar
         else:    
             raise Exception("Tipo de mensagem desconhecido: " + message.msg_type)
         

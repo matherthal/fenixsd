@@ -118,15 +118,19 @@ class Messenger(object):
         '''
         fd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-        if useTimeout:
-            fd.settimeout(self.timeout)
-        
+                
+                
         multicast = Consts.GROUPS[self.coordinator.id]
         if multicast == None:
             raise Exception('ID da maquina nao pertence a nenhum grupo multicast: ' + str(self.coordinator.id))
+        
         # bind udp port
         fd.bind((multicast, self.port))
+
+        if useTimeout:
+            fd.settimeout(self.timeout)
+
+        
         mreq = struct.pack('4sl', socket.inet_aton(multicast), socket.INADDR_ANY)                
         fd.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)                                
         try:
@@ -153,7 +157,7 @@ class Messenger(object):
         msg_rec = self.stringToMessage(data)
         
         #return msg_rec.data, msg_rec.sender
-        return self.coordinator.processMessage(msg_rec)           
+        return self.coordinator.processMessage(msg_rec,useTimeout)           
             
     def prepare(self):
         self.next_sequence += 1
