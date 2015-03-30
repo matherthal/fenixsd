@@ -1,0 +1,1 @@
+Aplicação tolerante à falhas em sistemas distribuidos.
